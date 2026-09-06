@@ -70,6 +70,7 @@ uyumluluk paketi · otomatik alt işleyen listesi). Bir modül bu üçünden bir
 - **Biçim:** köşe 10 (buton/input) / 14 (kart/modal) / 6 (çip) px; geçiş 150 ms; **gölge yok, glow yok, illüstrasyon yok, emoji yok**. İkon Heroicons outline inline SVG.
 - **Yoğunluk:** portal ferah; ops veri-yoğun, tablo satırı 36 px, gövde 13 px, **varsayılan koyu** (`data-default-theme="dark"`).
 - **Kanıt dili:** hash mono + kopyala (`HashChip`); kırık zincir kırmızı gösterilir, gizlenmez.
+- **Yüzey ayrımı:** pazarlama (`(public)`) **her zaman koyu** — `.vt-onyx` koyu paleti temadan bağımsız uygular, gradient yok; portal ve ops temalı ve **üst nav** kullanır (`.vt-topnav`), kenar çubuğu yok. Sapmalar `docs/kararlar.md` #42–#46.
 - **Dil:** cümle düzeni; 1. çoğul ("yedeği doğruladık", "hata yaptık, düzelttik"); ünlem nadir; "devrim/muhteşem" yasak; belirsizlik gizlenmez ("Doğrulama bekliyor").
 
 ---

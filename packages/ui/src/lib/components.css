@@ -515,6 +515,17 @@
       padding-inline: 28px;
     }
   }
+  /* Geniş kabuk — pazarlama ve üst-nav yüzeyleri (tasarım: 1280 / 40 px). */
+  .vt-shell {
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+  @media (min-width: 720px) {
+    .vt-shell {
+      padding-inline: 40px;
+    }
+  }
   .vt-topbar {
     position: sticky;
     top: 0;
@@ -557,9 +568,15 @@
   }
   .vt-bars span {
     flex: 1;
-    height: 22px;
+    height: var(--bar-h);
     border-radius: 2px;
     background: var(--st-unknown-bg);
+  }
+  .vt-bars[data-dense='true'] {
+    gap: 1.5px;
+  }
+  .vt-bars[data-dense='true'] span {
+    border-radius: 1.5px;
   }
   .vt-bars span[data-state='ok'] {
     background: var(--st-ok);
@@ -598,5 +615,427 @@
   }
   .vt-log .ok {
     color: #3bd3a8;
+  }
+
+  /* ── Marka işareti — parantezin içinde tuttuğumuz şey ─────────────── */
+  .vt-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .vt-mark i {
+    display: inline-block;
+    width: 0.55em;
+    height: 0.55em;
+    margin: 0 0.2em;
+    border-radius: 0.18em;
+    background: var(--accent);
+    font-style: normal;
+  }
+  .vt-mark b {
+    margin-left: 0.4em;
+    font-size: 0.78em;
+    font-weight: 800;
+  }
+  a.vt-mark:hover {
+    color: var(--text);
+  }
+
+  /* ── Mono eyebrow — ( kanıt defteri ) ─────────────────────────────── */
+  .vt-eyebrow {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--accent-text);
+  }
+
+  /* ── Display tipografi — pazarlama ve sayfa başlıkları ────────────── */
+  .vt-display {
+    margin: 0;
+    font-size: clamp(48px, 7vw, 104px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 0.98;
+  }
+  .vt-display-2 {
+    margin: 0;
+    font-size: clamp(40px, 5vw, 68px);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.06;
+    text-wrap: balance;
+  }
+  .vt-word {
+    margin: 0;
+    font-size: clamp(64px, 9vw, 132px);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.9;
+  }
+  .vt-prose {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text-2);
+    line-height: 1.7;
+    text-wrap: pretty;
+  }
+
+  /* ── İstatistik bloğu — sayı önce, açıklama sonra ─────────────────── */
+  .vt-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 32px;
+  }
+  .vt-stat-value {
+    margin: 0;
+    font-size: clamp(40px, 5vw, 68px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .vt-stat-value small {
+    margin-left: 6px;
+    font-size: 0.45em;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: var(--text-3);
+  }
+  .vt-stat-label {
+    margin: 10px 0 0;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-3);
+    line-height: 1.6;
+  }
+
+  /* ── Filtre çipleri ────────────────────────────────────────────────── */
+  .vt-chipbar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .vt-chip {
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-2);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 5px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      border-color var(--dur) var(--ease),
+      background-color var(--dur) var(--ease),
+      color var(--dur) var(--ease);
+  }
+  .vt-chip:hover {
+    border-color: var(--text);
+    color: var(--text);
+  }
+  .vt-chip[aria-pressed='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--ink-fg);
+  }
+
+  /* ── Üst gezinme — portal ve ops (tasarım deseni) ─────────────────── */
+  .vt-topnav {
+    display: flex;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .vt-topnav a {
+    display: block;
+    padding: 7px 13px;
+    border-radius: var(--r-md);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-3);
+    white-space: nowrap;
+    transition:
+      background-color var(--dur) var(--ease),
+      color var(--dur) var(--ease);
+  }
+  .vt-topnav a:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  .vt-topnav a[aria-current='page'] {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  .vt-topnav[data-density='ops'] a {
+    padding: 6px 11px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .vt-topnav[data-density='ops'] a[aria-current='page'] {
+    font-weight: 700;
+  }
+  .vt-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--ink-fg);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  /* ── Pazarlama şeridi — Kur · Tut · Kanıtla ───────────────────────── */
+  .vt-band {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(min(100%, 300px), 1fr) minmax(min(100%, 260px), 0.9fr);
+    gap: 40px;
+    align-items: center;
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .vt-band:last-child {
+    border-bottom: none;
+  }
+
+  /* ── Satır bağlantısı — ürün listesi ──────────────────────────────── */
+  .vt-rowlink {
+    display: grid;
+    grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.6fr) auto auto;
+    gap: 24px;
+    align-items: center;
+    padding: 22px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    transition: background-color var(--dur) var(--ease);
+  }
+  .vt-rowlink:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+
+  /* ── Adım şeridi — çalıştırma boru hattı ──────────────────────────── */
+  .vt-steps {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .vt-step {
+    flex: 1;
+    min-width: 96px;
+    border-radius: var(--r-md);
+    padding: 10px 12px;
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    color: var(--text-3);
+  }
+  .vt-step[data-state='ok'],
+  .vt-step[data-state='maintenance'],
+  .vt-step[data-state='down'] {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  .vt-step[data-state='ok'] {
+    border-color: var(--accent-bd);
+  }
+  .vt-step[data-state='maintenance'] {
+    border-color: var(--st-maintenance);
+  }
+  .vt-step[data-state='down'] {
+    border-color: var(--st-down-bd);
+  }
+  .vt-step-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .vt-step-dur {
+    margin: 5px 0 0;
+    font-size: 10.5px;
+    color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Kuyruk rayı — ops çalıştırmalar ──────────────────────────────── */
+  .vt-queue-item {
+    display: block;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--row-border);
+    border-left: 2px solid var(--st-unknown);
+    color: var(--text);
+    transition: background-color var(--dur) var(--ease);
+  }
+  .vt-queue-item:hover {
+    background: var(--row-hover);
+    color: var(--text);
+  }
+  .vt-queue-item[aria-current='page'] {
+    background: var(--surface-2);
+  }
+  .vt-queue-item[data-state='ok'] {
+    border-left-color: var(--st-ok);
+  }
+  .vt-queue-item[data-state='degraded'] {
+    border-left-color: var(--st-degraded);
+  }
+  .vt-queue-item[data-state='down'] {
+    border-left-color: var(--st-down);
+  }
+  .vt-queue-item[data-state='maintenance'] {
+    border-left-color: var(--st-maintenance);
+  }
+
+  /* ── Kanıt türü çipi — kapalı sözlüğün tonları ────────────────────── */
+  .vt-kind {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 4px 10px;
+    white-space: nowrap;
+    background: var(--st-unknown-bg);
+    color: var(--st-unknown-fg);
+  }
+  .vt-kind[data-tone='evidence'] {
+    background: var(--accent-soft);
+    color: var(--accent-deep);
+  }
+  .vt-kind[data-tone='info'] {
+    background: var(--st-maintenance-bg);
+    color: var(--st-maintenance-fg);
+  }
+  .vt-kind[data-tone='warn'] {
+    background: var(--st-degraded-bg);
+    color: var(--st-degraded-fg);
+  }
+  .vt-kind[data-tone='down'] {
+    background: var(--st-down-bg);
+    color: var(--st-down-fg);
+  }
+
+  /* ── Bant duyurusu — planlı bakım / açık olay ─────────────────────── */
+  .vt-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border-radius: var(--r-lg);
+    padding: 14px 18px;
+    font-size: 13.5px;
+    font-weight: 500;
+    background: var(--st-unknown-bg);
+    color: var(--st-unknown-fg);
+  }
+  .vt-banner[data-state='ok'] {
+    background: var(--st-ok-bg);
+    color: var(--st-ok-fg);
+  }
+  .vt-banner[data-state='degraded'] {
+    background: var(--st-degraded-bg);
+    color: var(--st-degraded-fg);
+  }
+  .vt-banner[data-state='down'] {
+    background: var(--st-down-bg);
+    color: var(--st-down-fg);
+  }
+  .vt-banner[data-state='maintenance'] {
+    background: var(--st-maintenance-bg);
+    color: var(--st-maintenance-fg);
+  }
+  .vt-banner-title {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 800;
+  }
+
+  /* ── Zincir halkası — hash → hash → hash ──────────────────────────── */
+  .vt-chain {
+    display: flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .vt-chain span {
+    border: 1px solid var(--border-strong);
+    color: var(--text-2);
+    border-radius: 8px;
+    padding: 8px 11px;
+    white-space: nowrap;
+  }
+  .vt-chain span[data-head='true'] {
+    border-color: var(--accent);
+    color: var(--accent-text);
+    font-weight: 700;
+  }
+  .vt-chain hr {
+    width: 20px;
+    height: 1px;
+    flex: none;
+    margin: 0;
+    border: none;
+    background: var(--border-strong);
+  }
+
+  /* ── Hareket — 150 ms dışındaki tek istisna: giriş animasyonları ──── */
+  @keyframes vt-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes vt-bar-up {
+    from {
+      transform: scaleY(0.08);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+  @keyframes vt-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+  .vt-fade {
+    animation: vt-fade-up 0.6s var(--ease) both;
+  }
+  .vt-live {
+    animation: vt-pulse 2.4s ease infinite;
+  }
+  .vt-bars[data-animate='true'] span {
+    transform-origin: bottom;
+    animation: vt-bar-up 0.5s var(--ease) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vt-fade,
+    .vt-live,
+    .vt-bars[data-animate='true'] span {
+      animation: none;
+    }
   }
 }

@@ -4,10 +4,23 @@ import type { WorkloadHealthCard } from '@veritut/types';
 import type { Actions, PageServerLoad } from './$types';
 import { apiFetch, ServerApiError } from '$lib/server/api';
 
+/** Zincir hükmü — sayfa başlığındaki "zincir bütün · N olay" bloğu için (D13). */
+export interface ChainVerdict {
+  ok: boolean;
+  checked: number;
+  brokenAt: number | null;
+  lastHash: string | null;
+}
+
 export const load: PageServerLoad = async ({ request, parent }) => {
   const { activeTenant } = await parent();
-  if (!activeTenant) return { cards: [] as WorkloadHealthCard[] };
-  return { cards: await apiFetch<WorkloadHealthCard[]>('/workloads', { cookie: request.headers.get('cookie'), tenantId: activeTenant.id }) };
+  if (!activeTenant) return { cards: [] as WorkloadHealthCard[], verdict: null };
+  const cookie = request.headers.get('cookie');
+  const [cards, verdict] = await Promise.all([
+    apiFetch<WorkloadHealthCard[]>('/workloads', { cookie, tenantId: activeTenant.id }),
+    apiFetch<ChainVerdict>('/evidence/verify', { cookie, tenantId: activeTenant.id }).catch(() => null),
+  ]);
+  return { cards, verdict };
 };
 
 /** İlk kiracı — JS'siz çalışan sunucu action'ı (KD deseni). */

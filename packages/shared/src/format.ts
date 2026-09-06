@@ -26,6 +26,10 @@ export function formatPercent(n: number): string {
 export function formatMoney(amount: number, currency: 'TRY' | 'EUR' | 'USD' = 'TRY'): string {
   return new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(amount);
 }
+/** Kuruşsuz para — pazarlama "başlangıç fiyatı" sütunları: 1150 → "₺1.150". */
+export function formatMoneyCompact(amount: number, currency: 'TRY' | 'EUR' | 'USD' = 'TRY'): string {
+  return new Intl.NumberFormat('tr-TR', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount);
+}
 /** Saniye → "5 dk 12 sn" */
 export function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);

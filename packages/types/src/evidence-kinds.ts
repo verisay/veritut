@@ -39,6 +39,32 @@ export const EVIDENCE_KIND_LABEL: Record<EvidenceKind, string> = {
   'breakglass.used': 'Acil erişim kullanıldı',
 };
 
+/**
+ * Tür tonu — kanıt çipinin semantik rengi (`.vt-kind[data-tone]`).
+ * Sözlük kapalı olduğu için ton haritası da tam (exhaustive) tutulur.
+ * `evidence` = sorumluluğu yerine getirdik · `info` = yaptığımız iş ·
+ * `warn` = dikkat isteyen erişim/geri alma · `down` = başarısızlık, gizlenmez.
+ */
+export type EvidenceTone = 'evidence' | 'info' | 'warn' | 'down';
+
+export const EVIDENCE_KIND_TONE: Record<EvidenceKind, EvidenceTone> = {
+  'workload.provisioned': 'info',
+  'workload.upgraded': 'info',
+  'workload.destroyed': 'warn',
+  'backup.completed': 'evidence',
+  'backup.failed': 'down',
+  'restore.drill.passed': 'evidence',
+  'restore.drill.failed': 'down',
+  'patch.applied': 'info',
+  'access.session': 'warn',
+  'change.applied': 'info',
+  'change.rolled_back': 'warn',
+  'incident.resolved': 'down',
+  'secret.rotated': 'info',
+  'tenant.offboarded': 'warn',
+  'breakglass.used': 'down',
+};
+
 export function isEvidenceKind(v: string): v is EvidenceKind {
   return (EVIDENCE_KINDS as readonly string[]).includes(v);
 }

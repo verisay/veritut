@@ -11,6 +11,9 @@
     --card: #ffffff;
     --surface-2: #ebeef1;
     --surface-3: #f0f2f4;
+    /* Yardımcı yüzeyler: tablo başlık şeridi / sayfa içi alternatif bant */
+    --surface-alt: #fafbfb;
+    --sunken: #eef1f3;
     --input-bg: #ffffff;
     --topbar: rgba(244, 246, 247, 0.86);
 
@@ -93,15 +96,19 @@
     --dur: 150ms;
     --ease: cubic-bezier(0.2, 0.6, 0.2, 1);
 
-    /* Yoğunluk — ops tablo satırı 36 px */
+    /* Yoğunluk — ops tablo satırı 36 px, uptime çubuğu yerel ezilebilir */
     --row-h: 36px;
+    --bar-h: 22px;
   }
 
-  .dark {
+  .dark,
+  .vt-onyx {
     --bg: #0b1522;
     --card: #111f31;
     --surface-2: #16263c;
     --surface-3: #1a2b41;
+    --surface-alt: #0f1c2e;
+    --sunken: #0a121d;
     --input-bg: rgba(255, 255, 255, 0.04);
     --topbar: rgba(11, 21, 34, 0.86);
 
@@ -157,6 +164,13 @@
     --toast-fg: #0b1522;
 
     --ring: rgba(231, 237, 243, 0.28);
+  }
+
+  /* Temadan bağımsız koyu yüzey — tasarımın pazarlama ana sayfası her zaman koyudur. */
+  .vt-onyx {
+    background: var(--bg);
+    color: var(--text);
+    color-scheme: dark;
   }
 
   html {

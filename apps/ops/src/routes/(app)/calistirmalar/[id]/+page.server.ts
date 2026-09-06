@@ -7,7 +7,17 @@ export interface RunDetail {
   steps: Array<{ step: string; status: string; summary: string | null; startedAt: string; finishedAt: string | null }>;
   log: Array<{ id: string; t: string; line: string; level: string }>;
 }
-export const load: PageServerLoad = async ({ request, params }) => ({ detail: await apiFetch<RunDetail>(`/ops/runs/${params.id}`, { cookie: request.headers.get('cookie') }) });
+/** Kuyruk rayı — tasarımdaki sol sütun; aynı listeden beslenir. */
+export interface RunRow { id: string; kind: string; status: string; risk: string; createdAt: string; finishedAt: string | null; exitCode: number | null }
+
+export const load: PageServerLoad = async ({ request, params }) => {
+  const cookie = request.headers.get('cookie');
+  const [detail, queue] = await Promise.all([
+    apiFetch<RunDetail>(`/ops/runs/${params.id}`, { cookie }),
+    apiFetch<RunRow[]>('/ops/runs', { cookie }).catch((): RunRow[] => []),
+  ]);
+  return { detail, queue };
+};
 
 export const actions: Actions = {
   approve: async ({ request, params }) => {

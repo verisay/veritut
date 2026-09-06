@@ -1,7 +1,9 @@
 export { default as Button } from './components/Button.svelte';
+export { default as Mark } from './components/Mark.svelte';
 export { default as Card } from './components/Card.svelte';
 export { default as Table } from './components/Table.svelte';
 export { default as StatusDot } from './components/StatusDot.svelte';
+export { default as UptimeBars } from './components/UptimeBars.svelte';
 export { default as StatusPill } from './components/StatusPill.svelte';
 export { default as ResidencyBadge } from './components/ResidencyBadge.svelte';
 export { default as HashChip } from './components/HashChip.svelte';
