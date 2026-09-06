@@ -78,3 +78,18 @@ test('SLA katmanları: tanımsızsa yalnız standart', () => {
   assert.deepEqual(allowedSlaTiers({}), ['std_9x5']);
   assert.deepEqual(allowedSlaTiers({ 'sla.tiers': ['std_9x5', 'crit_24x7'] }), ['std_9x5', 'crit_24x7']);
 });
+
+import { creditPctFor, POSTMORTEM_REQUIRED, SEVERITY_RESOLVE_FACTOR } from '../guvence.js';
+test('SLA kredisi: hedefin altına düştükçe basamaklanır, üstünde kredi yok', () => {
+  assert.equal(creditPctFor(99.95, 99.5), 0);
+  assert.equal(creditPctFor(99.5, 99.5), 0);
+  assert.equal(creditPctFor(99.4, 99.5), 5);
+  assert.equal(creditPctFor(98.9, 99.5), 10);
+  assert.equal(creditPctFor(97.9, 99.5), 25);
+  assert.equal(creditPctFor(94.4, 99.5), 50);
+});
+
+test('sev1/sev2 post-mortem ister; çözüm hedefi ciddiyete göre kısalır', () => {
+  assert.deepEqual(POSTMORTEM_REQUIRED, ['sev1', 'sev2']);
+  assert.equal(SEVERITY_RESOLVE_FACTOR.sev1 < SEVERITY_RESOLVE_FACTOR.sev3, true);
+});

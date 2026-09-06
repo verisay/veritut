@@ -57,11 +57,52 @@ await probeQueue.upsertJobScheduler('probe-platform', { every: 30_000 }, { name:
 
 // notify: IMailProvider (mock/dev). Alıcı listesi ve konu loglanır; sır içermez.
 const mail = createMailProvider(logger);
+interface ChannelJob {
+  channelId: string;
+  kind: 'email' | 'webhook' | 'slack' | 'teams' | 'sms';
+  target: string;
+  body: Record<string, unknown>;
+  signature?: string;
+}
+
+/** Müşteri alarm kanalı gönderimi (K4). Webhook/Slack/Teams HMAC imzalı; e-posta/SMS sağlayıcı üzerinden. */
+async function deliverChannel(d: ChannelJob): Promise<void> {
+  let error: string | null = null;
+  try {
+    if (d.kind === 'webhook' || d.kind === 'slack' || d.kind === 'teams') {
+      const payload = d.kind === 'webhook' ? d.body : { text: `VERITUT · ${String(d.body['event'])}: ${String(d.body['title'] ?? '')}` };
+      const res = await fetch(d.target, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', ...(d.signature ? { 'x-veritut-signature': d.signature } : {}) },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) error = `HTTP ${res.status}`;
+    } else if (d.kind === 'email') {
+      await mail.send({ to: [d.target], subject: `VERITUT · ${String(d.body['title'] ?? d.body['event'])}`, text: JSON.stringify(d.body, null, 2) });
+    } else {
+      // SMS: ISmsService adaptörü (Netgsm) prod credential'ıyla gelir; dev'de loglanır.
+      logger.info({ to: d.target.slice(-4), event: d.body['event'] }, 'sms (mock)');
+    }
+  } catch (e) {
+    error = e instanceof Error ? e.message : String(e);
+  }
+  await fetch(`${API_URL}/api/v1/internal/channel-result`, { method: 'POST', headers, body: JSON.stringify({ channelId: d.channelId, error }) }).catch(() => undefined);
+  if (error) throw new Error(`kanal gönderimi başarısız: ${error}`);
+}
+
 const notifyWorker = new Worker(
   'notify',
-  async (job: Job<MailMessage>) => {
-    if (job.name !== 'mail') return;
-    await mail.send(job.data);
+  async (job: Job) => {
+    if (job.name === 'mail') return mail.send(job.data as MailMessage);
+    if (job.name === 'channel') return deliverChannel(job.data as ChannelJob);
+    if (job.name === 'alert') {
+      // Nöbetçi eskalasyonu — SMS/çağrı sağlayıcısı prod'da bağlanır.
+      const d = job.data as { to: string; subject: string; text: string };
+      logger.warn({ to: d.to, subject: d.subject }, 'ESKALASYON çağrısı (mock)');
+      await mail.send({ to: [d.to], subject: d.subject, text: d.text });
+      return;
+    }
   },
   { connection, concurrency: 3 },
 );

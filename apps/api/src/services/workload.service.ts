@@ -135,7 +135,7 @@ export async function healthCards(tenantId: string): Promise<WorkloadHealthCard[
       .where(and(inArray(components.workloadId, ids), gte(probeResults.checkedAt, since))),
     db.select({ workloadId: costAllocations.workloadId, total: sql<string>`sum(${costAllocations.amount})`, currency: sql<string>`min(${costAllocations.currency})` }).from(costAllocations).where(and(inArray(costAllocations.workloadId, ids), eq(costAllocations.period, period))).groupBy(costAllocations.workloadId),
     db.select().from(backupJobs).where(inArray(backupJobs.workloadId, ids)).orderBy(desc(backupJobs.startedAt)),
-    Promise.resolve([] as Array<{ workloadId: string; at: Date }>), // restore_drills K4
+    (async () => { const { lastVerifiedRestores } = await import('./drill.service.js'); return lastVerifiedRestores(ids); })(),
     db.select({ workloadId: accessSessions.workloadId, n: sql<number>`count(*)::int` }).from(accessSessions).where(and(inArray(accessSessions.workloadId, ids), isNull(accessSessions.endedAt))).groupBy(accessSessions.workloadId),
   ]);
   const compByW = new Map(comps.map((c) => [c.workloadId, c.id]));
@@ -160,7 +160,7 @@ export async function healthCards(tenantId: string): Promise<WorkloadHealthCard[
       bars30d: bars(pr),
       lastBackupAt: lb?.finishedAt?.toISOString() ?? null,
       lastBackupOk: lb ? lb.status === 'completed' : null,
-      lastVerifiedRestoreAt: drills.find((d) => d.workloadId === w.id)?.at.toISOString() ?? null,
+      lastVerifiedRestoreAt: drills.find((d) => d.workloadId === w.id)?.at ?? null,
       monthCost: cost ? Number(cost.total) : null,
       costCurrency: cost?.currency ?? 'EUR',
       openAccessSessions: access.find((a) => a.workloadId === w.id)?.n ?? 0,

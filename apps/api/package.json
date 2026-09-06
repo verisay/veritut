@@ -13,6 +13,8 @@
     "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.700.0",
+    "@aws-sdk/s3-request-presigner": "^3.700.0",
     "@veritut/types": "workspace:*",
     "@veritut/validators": "workspace:*",
     "bullmq": "^5.34.0",
@@ -25,6 +27,7 @@
     "ioredis": "^5.4.2",
     "jose": "^5.9.6",
     "node-cron": "^3.0.3",
+    "pdfkit": "^0.15.1",
     "pg": "^8.13.1",
     "pino": "^9.6.0",
     "pino-http": "^10.4.0",
@@ -40,6 +43,7 @@
     "@types/express-serve-static-core": "^5.0.0",
     "@types/node": "^22.20.1",
     "@types/node-cron": "^3.0.11",
+    "@types/pdfkit": "^0.13.5",
     "@types/pg": "^8.11.10",
     "@types/ws": "^8.5.13",
     "pino-pretty": "^13.0.0",

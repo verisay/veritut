@@ -3,6 +3,7 @@ import { db } from '../db/db.js';
 import { kpiSnapshots, tenantSubscriptions, tenants, tickets, workloads } from '../db/schema/index.js';
 import { marginReport } from './cost.service.js';
 import { syncTimeAccounting } from './ticket.service.js';
+import { slaBreachCount } from './sla.service.js';
 
 /**
  * KPI panosu (plan §7.3): MRR, brüt marj, destek dakikası/müşteri, churn, aktif kiracı/iş yükü.
@@ -28,6 +29,7 @@ export async function computeKpi(period: string) {
     churnPct: churnBase > 0 ? String(Math.round(((cancelRow?.n ?? 0) / churnBase) * 1000) / 10) : null,
     grossMarginPct: margin.totals.marginPct === null ? null : String(margin.totals.marginPct),
     supportMinPerCustomer: String(Math.round((Number(ticketRow?.minutes ?? 0) / customers) * 100) / 100),
+    slaBreaches: await slaBreachCount(period),
     activeTenants: activeTenants?.n ?? 0,
     activeWorkloads: wlRow?.n ?? 0,
     computedAt: new Date(),

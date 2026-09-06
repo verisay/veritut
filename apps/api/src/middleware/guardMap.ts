@@ -26,6 +26,8 @@ export const SEGMENT_GUARDS: Record<string, GuardClass> = {
   support: 'user',
   'api-keys': 'user',
   ext: 'apikey', // public API — Bearer vt_… (D19)
+  guvence: 'user',
+  denetci: 'public', // süreli token'lı denetçi görünümü (kimliksiz, rate limitli)
 };
 
 export function guardMap(req: Request, _res: Response, next: NextFunction): void {

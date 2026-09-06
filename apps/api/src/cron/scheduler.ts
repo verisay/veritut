@@ -89,6 +89,67 @@ export function startScheduler(): void {
       logger.error({ err }, '[CRON] KPI hatası');
     }
   });
+  // Her dakika — SLA eskalasyonu (T-15) ve hedef aşımı işaretleme
+  cron.schedule('* * * * *', async () => {
+    try {
+      const { escalateDueIncidents, markBreaches } = await import('../services/incident.service.js');
+      const n = await escalateDueIncidents();
+      const b = await markBreaches();
+      if (n > 0 || b > 0) logger.warn({ escalated: n, breached: b }, '[CRON] SLA saati');
+    } catch (err) {
+      logger.error({ err }, '[CRON] SLA saati hatası');
+    }
+  });
+  // Ayın 1'i 01:00 — aylık geri dönüş tatbikatlarını planla; 01:30 — kuyruğa ver
+  cron.schedule('0 1 1 * *', async () => {
+    try {
+      const { scheduleMonthlyDrills } = await import('../services/drill.service.js');
+      logger.info({ n: await scheduleMonthlyDrills() }, '[CRON] aylık tatbikat planı');
+    } catch (err) {
+      logger.error({ err }, '[CRON] tatbikat planı hatası');
+    }
+  });
+  cron.schedule('30 1 * * *', async () => {
+    try {
+      const { dispatchScheduledDrills } = await import('../services/drill.service.js');
+      const n = await dispatchScheduledDrills();
+      if (n > 0) logger.info({ n }, '[CRON] tatbikat kuyruğa verildi');
+    } catch (err) {
+      logger.error({ err }, '[CRON] tatbikat kuyruk hatası');
+    }
+  });
+  // 02:45 — yapılandırma sapması taraması (elle müdahale denetçisi)
+  cron.schedule('45 2 * * *', async () => {
+    try {
+      const { scheduleDriftPlans } = await import('../services/drift.service.js');
+      logger.info({ n: await scheduleDriftPlans() }, '[CRON] sapma taraması');
+    } catch (err) {
+      logger.error({ err }, '[CRON] sapma taraması hatası');
+    }
+  });
+  // Ayın 2'si 06:30 — geçen dönemin SLA hesabı, kredileri ve raporları; kanıt paketi
+  cron.schedule('30 6 2 * *', async () => {
+    try {
+      const d = new Date();
+      d.setUTCMonth(d.getUTCMonth() - 1);
+      const period = d.toISOString().slice(0, 7);
+      const { computeSlaPeriod, applyCredits } = await import('../services/sla.service.js');
+      const { generateSlaReport, generateEvidenceBundle } = await import('../services/document.service.js');
+      const { db } = await import('../db/db.js');
+      const { tenants } = await import('../db/schema/index.js');
+      const { eq } = await import('drizzle-orm');
+      const r = await computeSlaPeriod(period);
+      const credits = await applyCredits(period);
+      const list = await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.status, 'active'));
+      for (const t of list) {
+        await generateSlaReport(t.id, period).catch(() => undefined);
+        await generateEvidenceBundle(t.id, period).catch(() => undefined);
+      }
+      logger.info({ ...r, credits, tenants: list.length }, '[CRON] SLA dönem kapanışı');
+    } catch (err) {
+      logger.error({ err }, '[CRON] SLA dönem kapanışı hatası');
+    }
+  });
   void sql;
-  logger.info('cron scheduler hazır — 8 job (oturum, snapshot, provider-sync, sahipsiz kaynak, probe saklama, deneme expiry, dönem kapanışı, KPI)');
+  logger.info('cron scheduler hazır — 13 job (oturum, snapshot, provider-sync, sahipsiz kaynak, probe saklama, deneme expiry, faturalama, KPI, SLA saati, tatbikat planı/kuyruğu, sapma taraması, SLA dönem kapanışı)');
 }

@@ -72,7 +72,21 @@ Kapsam dışı kaynak **404**. Haritasız segment **403** (fail-closed).
 Kapsamlar: `workloads:read` `evidence:read` `orders:read` `orders:write` `status:read` — eksik kapsam 403 `SCOPE_MISSING`. Kiracı bağlamı anahtardan gelir.
 
 ## Webhook (`/webhooks`, HMAC — `express.json`'dan ÖNCE mount)
-`POST /webhooks/billing` · `POST /webhooks/tickets` — `x-veritut-signature` (sha256 HMAC, ham gövde). İmza geçersiz → 401 ve `webhook_inbox`'a kayıt. Sağlayıcı gövdesi adaptörde kanonik şemaya çevrilir.
+`POST /webhooks/billing` · `POST /webhooks/tickets` (HMAC) · `POST /webhooks/alertmanager` (Bearer `ALERTMANAGER_TOKEN`) — `x-veritut-signature` (sha256 HMAC, ham gövde). İmza geçersiz → 401 ve `webhook_inbox`'a kayıt. Sağlayıcı gövdesi adaptörde kanonik şemaya çevrilir.
+
+## Güvence (`/guvence`, `vt_portal` + `X-Tenant-Id`)
+| Uç | Açıklama |
+| --- | --- |
+| `GET /guvence/incidents` · `GET /incidents/:id` | Yalnız müşteriye açık olaylar ve müşteriye açık güncellemeler (post-mortem ve personel alanları GİZLİ) |
+| `GET /guvence/maintenance` · `GET /sla` · `GET /drills` | Bakım pencereleri, SLA dönemleri, tatbikat sonuçları |
+| `GET /guvence/documents` · `GET /documents/:id/download` | Belge listesi ve PDF indirme (`X-Document-Sha256` başlığı) |
+| `POST /guvence/documents/{subprocessors,dpa,sla-report,evidence-bundle}` (admin+) | Belge üretimi; kanıt paketi `evidence.bundle` özelliği ister (403) |
+| `GET/POST/DELETE /guvence/channels` (technical+) | Alarm kanalları; hedef şifreli, listede maskeli |
+| `GET/POST/DELETE /guvence/auditor-links` (admin+) | Denetçi bağlantısı; POST yanıtı tek seferlik URL döner |
+
+## Denetçi (`/denetci/:token`, KİMLİKSİZ, 60 istek/dk)
+`GET /denetci/:token` → kapsam içindeki özet (zincir doğrulaması, SLA geçmişi, belge listesi) · `GET /denetci/:token/documents/:id` → PDF.
+Olay İÇERİĞİ paylaşılmaz. Bağlantı süreli ve iptal edilebilir; her kullanım `last_used_at`'e yazılır.
 
 ## Operasyon (`/ops`, `vt_ops`)
 | Uç | Rol | Açıklama |
@@ -101,6 +115,13 @@ Kapsamlar: `workloads:read` `evidence:read` `orders:read` `orders:write` `status
 | `GET /ops/orders` · `POST /ops/orders/:id/reject` (senior) | operator | sipariş kuyruğu |
 | `GET/PUT/DELETE /ops/tenants/:id/entitlement` (PUT/DELETE senior) | operator | plan istisnaları |
 | `GET /ops/kpi` · `POST /ops/kpi/compute` · `POST /ops/billing/push` (senior) · `POST /ops/billing/expire-trials` (senior) | operator | KPI ve dönem kapanışı |
+| `GET/POST /ops/incidents` · `GET /:id` · `POST /:id/{updates,pause,resolve,postmortem}` · `POST /incidents/escalate-due` | operator | olay yaşam döngüsü ve SLA saati (sev1/sev2 post-mortem'siz kapanmaz) |
+| `GET /ops/alerts` | operator | alarmlar + gürültü raporu |
+| `GET/POST /ops/maintenance` · `GET/POST/DELETE /ops/oncall` (yazma senior) | operator | bakım pencereleri, nöbet rotası |
+| `GET /ops/sla?period` · `POST /ops/sla/compute` | operator | uptime, ihlal, kredi (kredi otomatik faturaya) |
+| `GET/POST /ops/drills` · `POST /drills/schedule` (senior) | operator | geri dönüş tatbikatları |
+| `GET /ops/drift` · `POST /drift/scan` (senior) · `POST /drift/:id/acknowledge` | operator | yapılandırma sapması |
+| `POST /ops/tenants/:id/documents/:kind` (senior) | senior | kiracı adına belge üretimi |
 | `GET /ops/evidence/platform` | operator | platform zinciri + verdict |
 | `POST /ops/evidence/demo` | operator, **yalnız development** | demo kanıt olayı |
 
@@ -116,6 +137,9 @@ Kapsamlar: `workloads:read` `evidence:read` `orders:read` `orders:write` `status
 | `POST /internal/provider-accounts/:id/inventory` | runner | envanter raporu → upsert + gone + tahmini maliyet |
 | `POST /internal/backup-result` | runner | backup_jobs + kanıt; 2 ardışık hata → bildirim |
 | `POST /internal/access-session` | bastion/teleport | erişim oturumu → kanıt + kiracı bildirimi |
+| `POST /internal/drill-result` | runner | tatbikat sonucu → `restore.drill.*` kanıtı |
+| `POST /internal/drift-result` | runner | sapma raporu |
+| `POST /internal/channel-result` | worker | alarm kanalı gönderim sonucu |
 | `GET /internal/runs/:id/state` · `GET /internal/runs/:id/workload-secrets` · `GET /internal/blueprints/:slug/:version` | runner | devam için adımlar; mühürlü girdiler; manifest |
 | `POST /internal/runs/:id/plan` → `{status, risk}` · `GET /internal/runs/:id/approval` → `{state}` | runner | plan raporu → risk → onay yoklaması |
 | `GET /internal/workloads/:id` · `POST /:id/register` · `POST /:id/handoff` · `POST /:id/destroyed` · `POST /:id/failed` | runner | boru hattı kayıt/teslim |

@@ -17,6 +17,7 @@ server.listen(env.API_PORT, '0.0.0.0', () => {
   logger.info(`API hazır → http://0.0.0.0:${env.API_PORT} (${env.NODE_ENV})`);
   startScheduler();
   void loadBlueprints();
+  void import('./services/storage.service.js').then((m) => m.ensureDocBucket());
 });
 
 async function shutdown(signal: string): Promise<void> {

@@ -9,6 +9,9 @@ import { sealedCredentialsFor } from '../services/run.service.js';
 import { planReportSchema, registerWorkloadSchema } from '@veritut/validators';
 import { approvalState, completeDestroy, failWorkload, handoffWorkload, registerWorkload, reportPlan, sealedWorkloadSecrets } from '../services/provisioning.service.js';
 import { getBlueprint } from '../services/blueprint.service.js';
+import { drillResultSchema, driftResultSchema } from '@veritut/validators';
+import { applyDrillResult } from '../services/drill.service.js';
+import { applyDriftResult } from '../services/drift.service.js';
 import { internalAuth } from '../middleware/internalAuth.js';
 import { validate } from '../middleware/validate.js';
 import { finishRun, reportStep } from '../services/run.service.js';
@@ -125,6 +128,21 @@ internalRouter.post('/workloads/:id/destroyed', validate(z.object({ runId: z.str
 });
 internalRouter.get('/blueprints/:slug/:version', async (req, res, next) => {
   try { res.json(await getBlueprint(String(req.params['slug']), String(req.params['version']))); } catch (e) { next(e); }
+});
+
+internalRouter.post('/drill-result', validate(drillResultSchema), async (req, res, next) => {
+  try { res.status(201).json(await applyDrillResult(req.body)); } catch (e) { next(e); }
+});
+internalRouter.post('/drift-result', validate(driftResultSchema), async (req, res, next) => {
+  try { res.status(201).json(await applyDriftResult(req.body)); } catch (e) { next(e); }
+});
+/** Worker: kanal gönderim sonucu (başarı/hata) aynaya yazılır. */
+internalRouter.post('/channel-result', validate(z.object({ channelId: z.string().uuid(), error: z.string().max(500).nullable() })), async (req, res, next) => {
+  try {
+    const { markChannelResult } = await import('../services/channel.service.js');
+    await markChannelResult(req.body.channelId, req.body.error);
+    res.status(204).end();
+  } catch (e) { next(e); }
 });
 
 /** Runner/worker kanıt yazar (ör. backup.completed) — tür kapalı sözlükten. */

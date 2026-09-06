@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { db } from './db.js';
-import { addons, plans, priceList, productVersions, products, slaTiers } from './schema/index.js';
+import { addons, businessCalendar, plans, priceList, productVersions, products, slaTiers } from './schema/index.js';
 
 /**
  * K3 katalog seed'i (idempotent): planlar, SLA katmanları, ürünler, ürün sürümleri, fiyat listesi.
@@ -63,6 +63,50 @@ const PLAN_FACTOR: Record<string, number> = { free: 1, baslangic: 1, profesyonel
 const SIZE_FACTOR: Record<string, number> = { S: 1, M: 2, L: 4 };
 const RESIDENCY_FACTOR: Record<string, number> = { TR: 1.1, EU: 1, US: 1.05 };
 
+/**
+ * TR resmî tatilleri — SLA 9x5 saatinde iş günü hesabı için (plan §8.2).
+ * Sabit tarihliler yıllık üretilir; dini bayramlar (hicri) elle listelenir.
+ */
+const RELIGIOUS_HOLIDAYS = [
+  ['2026-03-19', 'Ramazan Bayramı Arifesi', true],
+  ['2026-03-20', 'Ramazan Bayramı 1. Gün'],
+  ['2026-03-21', 'Ramazan Bayramı 2. Gün'],
+  ['2026-03-22', 'Ramazan Bayramı 3. Gün'],
+  ['2026-05-26', 'Kurban Bayramı Arifesi', true],
+  ['2026-05-27', 'Kurban Bayramı 1. Gün'],
+  ['2026-05-28', 'Kurban Bayramı 2. Gün'],
+  ['2026-05-29', 'Kurban Bayramı 3. Gün'],
+  ['2026-05-30', 'Kurban Bayramı 4. Gün'],
+  ['2027-03-09', 'Ramazan Bayramı Arifesi', true],
+  ['2027-03-10', 'Ramazan Bayramı 1. Gün'],
+  ['2027-03-11', 'Ramazan Bayramı 2. Gün'],
+  ['2027-03-12', 'Ramazan Bayramı 3. Gün'],
+  ['2027-05-16', 'Kurban Bayramı Arifesi', true],
+  ['2027-05-17', 'Kurban Bayramı 1. Gün'],
+  ['2027-05-18', 'Kurban Bayramı 2. Gün'],
+  ['2027-05-19', 'Kurban Bayramı 3. Gün'],
+  ['2027-05-20', 'Kurban Bayramı 4. Gün'],
+] as const;
+
+const FIXED_HOLIDAYS: Array<[string, string]> = [
+  ['01-01', 'Yılbaşı'],
+  ['04-23', 'Ulusal Egemenlik ve Çocuk Bayramı'],
+  ['05-01', 'Emek ve Dayanışma Günü'],
+  ['05-19', 'Atatürk\'ü Anma, Gençlik ve Spor Bayramı'],
+  ['07-15', 'Demokrasi ve Millî Birlik Günü'],
+  ['08-30', 'Zafer Bayramı'],
+  ['10-28', 'Cumhuriyet Bayramı Arifesi'],
+  ['10-29', 'Cumhuriyet Bayramı'],
+];
+
+async function seedCalendar(): Promise<number> {
+  const rows: Array<{ day: string; title: string; halfDay: boolean }> = [];
+  for (const year of [2026, 2027, 2028]) for (const [md, title] of FIXED_HOLIDAYS) rows.push({ day: `${year}-${md}`, title, halfDay: md === '10-28' });
+  for (const h of RELIGIOUS_HOLIDAYS) rows.push({ day: h[0], title: h[1], halfDay: Boolean(h[2]) });
+  for (const r of rows) await db.insert(businessCalendar).values(r).onConflictDoNothing();
+  return rows.length;
+}
+
 export async function seedK3(): Promise<void> {
   for (const p of PLANS) await db.insert(plans).values(p).onConflictDoUpdate({ target: plans.code, set: { title: p.title, summary: p.summary, features: p.features, sort: p.sort, active: true } });
   for (const s of SLA) await db.insert(slaTiers).values(s).onConflictDoUpdate({ target: slaTiers.code, set: { ...s, active: true } });
@@ -98,5 +142,6 @@ export async function seedK3(): Promise<void> {
           }
   }
   const rows = (await db.execute(sql`SELECT count(*)::int AS n FROM price_list`)).rows as Array<{ n: number }>;
-  console.log(`K3 seed: ${PLANS.length} plan, ${SLA.length} SLA, ${PRODUCTS.length} ürün, ${rows[0]?.n ?? 0} fiyat satırı`);
+  const cal = await seedCalendar();
+  console.log(`K3 seed: ${PLANS.length} plan, ${SLA.length} SLA, ${PRODUCTS.length} ürün, ${rows[0]?.n ?? 0} fiyat satırı, ${cal} tatil günü`);
 }

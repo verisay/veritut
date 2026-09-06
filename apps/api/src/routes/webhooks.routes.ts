@@ -7,6 +7,10 @@ import { createBillingProvider } from '../providers/billing/index.js';
 import { createTicketProvider } from '../providers/ticket/index.js';
 import { applyBillingEvent } from '../services/billing.service.js';
 import { applyTicketEvent } from '../services/ticket.service.js';
+import { alertmanagerSchema } from '@veritut/validators';
+import { applyAlertmanager } from '../services/alert.service.js';
+import { env } from '../config/env.js';
+import { timingSafeEqual } from 'node:crypto';
 
 /**
  * Webhook alıcıları — `express.json`'dan ÖNCE mount edilir (HMAC ham gövde ister).
@@ -72,4 +76,37 @@ webhooksRouter.post('/tickets', async (req, res) => {
   await applyTicketEvent(parsed.data);
   await inbox('tickets', true, payload);
   res.json({ ok: true });
+});
+
+/**
+ * Alertmanager → olay (plan §8.3). Kimlik: Bearer token (`ALERTMANAGER_TOKEN`) — Alertmanager
+ * HMAC imzalamaz, `http_config.authorization` ile bearer gönderir.
+ */
+webhooksRouter.post('/alertmanager', async (req, res) => {
+  const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from('');
+  const got = String(req.headers['authorization'] ?? '').replace(/^Bearer /, '');
+  const want = env.ALERTMANAGER_TOKEN;
+  const ok = want.length > 0 && got.length === want.length && timingSafeEqual(Buffer.from(got), Buffer.from(want));
+  let payload: unknown = null;
+  try {
+    payload = JSON.parse(rawBody.toString('utf8'));
+  } catch {
+    await inbox('alertmanager', false, { raw: rawBody.toString('utf8').slice(0, 500) }, 'json ayrıştırılamadı');
+    res.status(400).json({ code: 'BAD_REQUEST', message: 'Geçersiz gövde' });
+    return;
+  }
+  if (!ok) {
+    await inbox('alertmanager', false, payload, 'token doğrulanamadı');
+    res.status(401).json({ code: 'BAD_TOKEN', message: 'Yetkilendirme başarısız' });
+    return;
+  }
+  const parsed = alertmanagerSchema.safeParse(payload);
+  if (!parsed.success) {
+    await inbox('alertmanager', true, payload, 'şema uyuşmadı');
+    res.status(422).json({ code: 'VALIDATION_ERROR', message: 'Alarm şeması uyuşmuyor', details: parsed.error.flatten().fieldErrors });
+    return;
+  }
+  const r = await applyAlertmanager(parsed.data);
+  await inbox('alertmanager', true, { received: parsed.data.alerts.length, ...r });
+  res.json(r);
 });

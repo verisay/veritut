@@ -35,6 +35,7 @@ export const workloads = pgTable(
     planCode: text('plan_code'),
     orderId: uuid('order_id'),
     trialEndsAt: timestamp('trial_ends_at', { withTimezone: true }),
+    drillSchedule: text('drill_schedule').notNull().default('monthly'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

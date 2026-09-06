@@ -7,3 +7,4 @@ export * from './policy/index.js';
 export * from './inventory.js';
 export * from './blueprint.js';
 export * from './catalog.js';
+export * from './guvence.js';

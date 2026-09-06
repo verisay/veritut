@@ -3,7 +3,7 @@ import { mkdir, readFile, rm, writeFile, cp, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { createConnection } from 'node:net';
 import { execFileSync } from 'node:child_process';
-import type { BlueprintManifest, PlanSummary, RunStep } from '@veritut/types';
+import { RUN_STEPS, type BlueprintManifest, type PlanSummary, type RunStep } from '@veritut/types';
 import { api, connection, fetchCredentials, finish, log, mask, runnerKey, step } from './context.js';
 import { unseal } from '../lib/unseal.js';
 
@@ -149,6 +149,66 @@ async function runChecks(bp: BlueprintManifest, outputs: Record<string, unknown>
     results.push({ name: c.name, ok, detail });
   }
   return results;
+}
+
+/**
+ * Sapma taraması (K4): yalnız `tofu plan` — apply YOK. Elle yapılan üretim değişikliğini yakalar.
+ * Kilit alınmaz (salt-okuma); state şifreli okunur.
+ */
+export async function runDriftPlan(p: ProvisionPayload): Promise<void> {
+  const dir = path.join(WORK_DIR, p.workloadId);
+  const bpDir = path.join(BLUEPRINTS_DIR, p.blueprint, p.version);
+  try {
+    await step(p.runId, 'validate', 'running');
+    await log(p.runId, `sapma taraması · ${p.workloadSlug} · ${p.blueprint}@${p.version}`);
+    const bp = await api<BlueprintManifest>(`/internal/blueprints/${p.blueprint}/${p.version}`);
+    if (!bp.has_tofu) {
+      await log(p.runId, '  blueprint tofu içermiyor — sapma taraması atlandı');
+      for (const s of RUN_STEPS) if (s !== 'validate') await step(p.runId, s, 'skipped', 'tofu yok');
+      await step(p.runId, 'validate', 'succeeded');
+      await finish(p.runId, 'succeeded', 0, { skipped: true });
+      return;
+    }
+    await mkdir(path.join(WORK_DIR, '.plugin-cache'), { recursive: true });
+    await mkdir(dir, { recursive: true });
+    await cp(path.join(bpDir, 'tofu'), path.join(dir, 'tofu'), { recursive: true, force: true });
+    await step(p.runId, 'validate', 'succeeded');
+
+    await step(p.runId, 'unseal', 'running');
+    const { provider } = await fetchCredentials(p.runId);
+    await step(p.runId, 'unseal', 'succeeded');
+
+    const workload = await api<{ inputs: Record<string, unknown> }>(`/internal/workloads/${p.workloadId}`);
+    const sshKey = await runnerSshKey();
+    const env = tfEnv(provider, p.workloadId, sshKey.publicKey);
+    const sealedSecrets = await api<Record<string, string>>(`/internal/runs/${p.runId}/workload-secrets`);
+    for (const [k, v] of Object.entries(sealedSecrets)) env[`TF_VAR_${k}`] = unseal(v, runnerKey()).toString('utf8');
+    const tfDir = path.join(dir, 'tofu');
+    const vars: Record<string, unknown> = { ...workload.inputs, ...p.sizeVars, region: p.region, size: p.size, residency: p.residency, tenant_slug: p.tenantSlug, workload_slug: p.workloadSlug, workload_id: p.workloadId };
+    await writeFile(path.join(tfDir, 'veritut.auto.tfvars.json'), JSON.stringify(vars, null, 2));
+    const backendArgs = TFSTATE_URL ? ['-backend-config', `conn_str=${TFSTATE_URL}`, '-backend-config', `schema_name=w_${p.workloadId.replace(/-/g, '')}`] : [];
+
+    await step(p.runId, 'plan', 'running');
+    const init = await sh('tofu', ['init', '-no-color', '-reconfigure', ...backendArgs], { cwd: tfDir, env, onLine: async () => undefined, timeoutMs: 10 * 60_000 });
+    if (init.code !== 0) throw new Error(`tofu init başarısız (${init.code})`);
+    const plan = await sh('tofu', ['plan', '-json', '-refresh=true'], { cwd: tfDir, env, onLine: async () => undefined, timeoutMs: 15 * 60_000 });
+    if (plan.code !== 0) throw new Error(`tofu plan başarısız (${plan.code})`);
+    const summary = parsePlanJson(plan.stdout);
+    const hasDrift = summary.add + summary.change + summary.destroy + summary.replace > 0;
+    await log(p.runId, `  sapma: ${hasDrift ? 'VAR' : 'yok'} · +${summary.add} ~${summary.change} -${summary.destroy} ±${summary.replace}`, hasDrift ? 'err' : 'ok');
+    for (const r of summary.resources.filter((x) => x.action !== 'no-op' && x.action !== 'read')) await log(p.runId, `    ${r.action.padEnd(8)} ${r.address}`);
+    await step(p.runId, 'plan', 'succeeded');
+
+    await step(p.runId, 'register', 'running');
+    await api('/internal/drift-result', { method: 'POST', body: JSON.stringify({ workloadId: p.workloadId, runId: p.runId, hasDrift, diff: summary }) });
+    await step(p.runId, 'register', 'succeeded');
+    for (const s of ['apply', 'configure', 'verify', 'handoff'] as const) await step(p.runId, s, 'skipped', 'salt-okuma');
+    await finish(p.runId, 'succeeded', 0, { hasDrift, ...summary, resources: undefined });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    await log(p.runId, `HATA: ${mask(msg)}`, 'err');
+    await finish(p.runId, 'failed', 1, { error: msg.slice(0, 500) }).catch(() => undefined);
+  }
 }
 
 export async function runProvision(p: ProvisionPayload): Promise<void> {

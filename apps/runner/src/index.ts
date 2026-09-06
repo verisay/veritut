@@ -3,7 +3,8 @@ import { RUN_STEPS } from '@veritut/types';
 import { closeContext, connection, finish, log, logger, runnerKey, step } from './jobs/context.js';
 import { runProviderSync } from './jobs/provider-sync.js';
 import { runBackup } from './jobs/backup.js';
-import { runProvision, type ProvisionPayload } from './jobs/provision.js';
+import { runDriftPlan, runProvision, type ProvisionPayload } from './jobs/provision.js';
+import { runDrill, type DrillPayload } from './jobs/drill.js';
 
 /**
  * Runner (D5): tedarikçiye dokunan TEK süreç; X25519 özel anahtarı yalnız burada.
@@ -42,7 +43,8 @@ const provisionWorker = new Worker(
         const d = job.data;
         return await runBackup(runId, { workloadId: d.workloadId!, backupJobId: d.backupJobId!, repoId: d.repoId!, paths: d.paths ?? [], retention: d.retention ?? '', workloadSlug: d.workloadSlug ?? '' });
       }
-      if (['provision', 'resize', 'destroy', 'upgrade', 'drift-plan'].includes(kind)) {
+      if (kind === 'drift-plan') return await runDriftPlan(job.data as unknown as ProvisionPayload);
+      if (['provision', 'resize', 'destroy', 'upgrade'].includes(kind)) {
         return await runProvision(job.data as unknown as ProvisionPayload);
       }
       await log(runId, `desteklenmeyen kind: ${kind} (K2'de gelir)`, 'err');
@@ -79,7 +81,16 @@ const syncWorker = new Worker(
 );
 syncWorker.on('ready', () => logger.info('runner hazır — kuyruk: provider-sync'));
 
-const drillWorker = new Worker('drill', async (job: Job) => logger.info({ jobId: job.id }, 'drill job alındı (iskelet — K4)'), { connection });
+const drillWorker = new Worker(
+  'drill',
+  async (job: Job<DrillPayload>) => {
+    logger.info({ runId: job.data.runId, workloadId: job.data.workloadId }, 'drill job alındı');
+    await runDrill(job.data);
+  },
+  { connection, concurrency: 1, lockDuration: 60_000, stalledInterval: 30_000 },
+);
+drillWorker.on('ready', () => logger.info('runner hazır — kuyruk: drill'));
+drillWorker.on('failed', (job, err) => logger.error({ jobId: job?.id, err: err.message }, 'drill başarısız'));
 
 async function shutdown(signal: string): Promise<void> {
   logger.info(`${signal} alındı — runner kapanıyor (aktif run drain)`);

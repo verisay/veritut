@@ -8,5 +8,8 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN pnpm config set store-dir /pnpm/store --global
 RUN apt-get update && apt-get install -y --no-install-recommends \
       python3 make g++ git ca-certificates curl \
+      fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
+# NOT: PDF üretimi (kanıt paketi, SLA raporu, DPA) Türkçe karakter için gömülü TTF ister —
+# pdfkit'in yerleşik Helvetica'sı WinAnsi'dir ve ğ/ş/ı taşımaz. DejaVuSans bu yüzden imajda.
 WORKDIR /app

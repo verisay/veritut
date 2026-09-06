@@ -30,6 +30,14 @@ import { clearOverride, getFeatures, effectivePlanCode, setOverride } from '../s
 import { listAllOrders, rejectOrder } from '../services/order.service.js';
 import { computeKpi, listKpi } from '../services/kpi.service.js';
 import { pushPeriod, expireTrials } from '../services/billing.service.js';
+import { createIncidentSchema, drillTriggerSchema, incidentUpdateSchema, maintenanceSchema, oncallShiftSchema, pauseClockSchema, postmortemSchema, resolveIncidentSchema, slaComputeSchema } from '@veritut/validators';
+import { addUpdate, createIncident, createMaintenance, escalateDueIncidents, getIncident, listIncidents, listMaintenance, markBreaches, resolveIncident, setClockPaused, writePostmortem } from '../services/incident.service.js';
+import { createShift, deleteShift, currentOncall, listShifts } from '../services/oncall.service.js';
+import { applyCredits, computeSlaPeriod, listSlaPeriods } from '../services/sla.service.js';
+import { listDrills, scheduleMonthlyDrills, triggerDrill } from '../services/drill.service.js';
+import { acknowledgeDrift, listDrift, scheduleDriftPlans } from '../services/drift.service.js';
+import { alertNoiseReport, listAlerts } from '../services/alert.service.js';
+import { generateDpa, generateEvidenceBundle, generateSlaReport, generateSubprocessors } from '../services/document.service.js';
 
 /** Personel uçları — tümü `requireStaff` altında; kiracı bağlamı açık parametre + audit. */
 export const opsRouter: Router = Router();
@@ -209,6 +217,93 @@ opsRouter.post('/billing/push', requireStaffRole('senior'), async (req, res, nex
 });
 opsRouter.post('/billing/expire-trials', requireStaffRole('senior'), async (_req, res, next) => {
   try { res.json({ expired: await expireTrials() }); } catch (e) { next(e); }
+});
+
+// ── Olaylar (K4) ──────────────────────────────────────────────────────────
+opsRouter.get('/incidents', async (req, res, next) => {
+  try { res.json(await listIncidents({ open: req.query['acik'] === '1', tenantId: typeof req.query['tenant'] === 'string' ? req.query['tenant'] : undefined })); } catch (e) { next(e); }
+});
+opsRouter.post('/incidents', validate(createIncidentSchema), async (req, res, next) => {
+  try { res.status(201).json(await createIncident(req.body, req.staff!.id, 'manual')); } catch (e) { next(e); }
+});
+opsRouter.get('/incidents/:id', async (req, res, next) => {
+  try { res.json(await getIncident(uuid.parse(req.params['id']))); } catch (e) { next(e); }
+});
+opsRouter.post('/incidents/:id/updates', validate(incidentUpdateSchema), async (req, res, next) => {
+  try { res.json(await addUpdate(uuid.parse(req.params['id']), req.body, req.staff!.id)); } catch (e) { next(e); }
+});
+opsRouter.post('/incidents/:id/pause', validate(pauseClockSchema), async (req, res, next) => {
+  try { res.json(await setClockPaused(uuid.parse(req.params['id']), req.body.paused, req.staff!.id)); } catch (e) { next(e); }
+});
+opsRouter.post('/incidents/:id/resolve', validate(resolveIncidentSchema), async (req, res, next) => {
+  try { res.json(await resolveIncident(uuid.parse(req.params['id']), req.body.body, req.body.customerVisible, req.staff!.id)); } catch (e) { next(e); }
+});
+opsRouter.post('/incidents/:id/postmortem', validate(postmortemSchema), async (req, res, next) => {
+  try { res.json(await writePostmortem(uuid.parse(req.params['id']), req.body.postmortem, req.staff!.id)); } catch (e) { next(e); }
+});
+/** SLA saati elle tetikleme (cron her dakika koşar; nöbet provası ve teşhis için). */
+opsRouter.post('/incidents/escalate-due', async (_req, res, next) => {
+  try { res.json({ escalated: await escalateDueIncidents(), breached: await markBreaches() }); } catch (e) { next(e); }
+});
+opsRouter.get('/alerts', async (_req, res, next) => {
+  try { res.json({ alerts: await listAlerts(), noise: await alertNoiseReport() }); } catch (e) { next(e); }
+});
+
+// ── Bakım pencereleri + nöbet ─────────────────────────────────────────────
+opsRouter.get('/maintenance', async (_req, res, next) => {
+  try { res.json(await listMaintenance({})); } catch (e) { next(e); }
+});
+opsRouter.post('/maintenance', validate(maintenanceSchema), async (req, res, next) => {
+  try { res.status(201).json(await createMaintenance(req.body, req.staff!.id)); } catch (e) { next(e); }
+});
+opsRouter.get('/oncall', async (_req, res, next) => {
+  try { res.json({ shifts: await listShifts(), current: await currentOncall(1), backup: await currentOncall(2) }); } catch (e) { next(e); }
+});
+opsRouter.post('/oncall', requireStaffRole('senior'), validate(oncallShiftSchema), async (req, res, next) => {
+  try { res.status(201).json(await createShift(req.body, req.staff!.id)); } catch (e) { next(e); }
+});
+opsRouter.delete('/oncall/:id', requireStaffRole('senior'), async (req, res, next) => {
+  try { await deleteShift(uuid.parse(req.params['id']), req.staff!.id); res.status(204).end(); } catch (e) { next(e); }
+});
+
+// ── SLA + tatbikat + sapma ────────────────────────────────────────────────
+opsRouter.get('/sla', async (req, res, next) => {
+  try { res.json(await listSlaPeriods({ period: typeof req.query['period'] === 'string' ? req.query['period'] : undefined })); } catch (e) { next(e); }
+});
+opsRouter.post('/sla/compute', validate(slaComputeSchema), async (req, res, next) => {
+  try { const r = await computeSlaPeriod(req.body.period, req.body.tenantId); res.json({ ...r, creditsApplied: await applyCredits(req.body.period) }); } catch (e) { next(e); }
+});
+opsRouter.get('/drills', async (_req, res, next) => {
+  try { res.json(await listDrills({})); } catch (e) { next(e); }
+});
+opsRouter.post('/drills', validate(drillTriggerSchema), async (req, res, next) => {
+  try { res.status(201).json(await triggerDrill(req.body.workloadId, req.staff!.id)); } catch (e) { next(e); }
+});
+opsRouter.post('/drills/schedule', requireStaffRole('senior'), async (_req, res, next) => {
+  try { res.json({ scheduled: await scheduleMonthlyDrills() }); } catch (e) { next(e); }
+});
+opsRouter.get('/drift', async (req, res, next) => {
+  try { res.json(await listDrift({ unacknowledgedOnly: req.query['yeni'] === '1' })); } catch (e) { next(e); }
+});
+opsRouter.post('/drift/scan', requireStaffRole('senior'), async (_req, res, next) => {
+  try { res.json({ scheduled: await scheduleDriftPlans() }); } catch (e) { next(e); }
+});
+opsRouter.post('/drift/:id/acknowledge', async (req, res, next) => {
+  try { res.json(await acknowledgeDrift(uuid.parse(req.params['id']), req.staff!.id)); } catch (e) { next(e); }
+});
+
+// ── Belgeler (ops adına üretim) ───────────────────────────────────────────
+opsRouter.post('/tenants/:id/documents/:kind', requireStaffRole('senior'), async (req, res, next) => {
+  try {
+    const tid = uuid.parse(req.params['id']);
+    const kind = String(req.params['kind']);
+    const p = typeof req.body?.period === 'string' ? req.body.period : new Date().toISOString().slice(0, 7);
+    if (kind === 'dpa') return void res.status(201).json(await generateDpa(tid));
+    if (kind === 'subprocessors') return void res.status(201).json(await generateSubprocessors(tid));
+    if (kind === 'sla_report') return void res.status(201).json(await generateSlaReport(tid, p));
+    if (kind === 'evidence_bundle') return void res.status(201).json(await generateEvidenceBundle(tid, p));
+    throw ApiError.badRequest('Bilinmeyen belge türü');
+  } catch (e) { next(e); }
 });
 
 // ── Maliyet & marj ────────────────────────────────────────────────────────

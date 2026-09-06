@@ -17,7 +17,7 @@
     "dev:ops": "pnpm --filter @veritut/ops dev",
     "dev:status": "pnpm --filter @veritut/status dev",
     "build": "turbo run build",
-    "check": "turbo run check",
+    "check": "turbo run check --concurrency=2",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "turbo run test",
@@ -35,6 +35,8 @@
     "typescript-eslint": "^8.20.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

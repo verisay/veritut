@@ -39,6 +39,8 @@ const envSchema = z.object({
   FOSSBILLING_URL: z.string().default(''),
   FOSSBILLING_API_KEY: z.string().default(''),
   BILLING_WEBHOOK_SECRET: z.string().min(16, 'BILLING_WEBHOOK_SECRET en az 16 karakter'),
+  /** Alertmanager webhook bearer token'ı (olay kuralı). */
+  ALERTMANAGER_TOKEN: z.string().min(16, 'ALERTMANAGER_TOKEN en az 16 karakter'),
   /** Destek masası (D18). */
   TICKET_PROVIDER: z.enum(['mock', 'zammad']).default('mock'),
   ZAMMAD_URL: z.string().default(''),
