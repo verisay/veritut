@@ -7,6 +7,7 @@ Web: **SvelteKit 2 + Svelte 5 runes** | API: **Express 5** | Kuyruk: **Redis 7 +
 > **Ana plan:** `ai-plans/VERITUT-Uygulama-Plani.md` — donmuş kararlar (D1–D26), veri modeli (§4),
 > kodlama fazları (K0–K6) ve kabul ölçütlerinin tek kaynağı. Strateji: `ai-plans/VERITUT-Stratejik-Plan.md`.
 > Çelişkide **plan kazanır**, bu dosya güncellenir. Sapmalar: `docs/kararlar.md`.
+> **Kalan işler:** `docs/kalan-isler.md` — açık borçlar, K5/K6 kapsamı, kod dışı işler, lansman kontrol listesi.
 > **API sözleşmesi:** `docs/api-sozlesme.md` (bağlayıcı). **Tasarım sistemi:** Claude Design
 > "Veritut Design System" v1.0 → `packages/ui/src/lib/tokens.css` (verbatim).
 

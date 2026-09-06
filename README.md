@@ -1,7 +1,7 @@
 # VERITUT
 
 Yönetilen çoklu-bulut operatörü — kontrol düzlemi (API + worker + runner), müşteri portalı, operasyon paneli, durum sayfası.
-Plan: `ai-plans/VERITUT-Uygulama-Plani.md`. AI bağlamı: `CLAUDE.md`.
+Plan: `ai-plans/VERITUT-Uygulama-Plani.md`. AI bağlamı: `CLAUDE.md`. Kalan işler: `docs/kalan-isler.md`.
 
 ## Geliştirme (Docker filo)
 
