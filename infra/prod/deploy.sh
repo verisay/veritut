@@ -34,7 +34,8 @@ echo "sha: $SHA"
 # --- 2. hedef doğrulaması (yanlış sunucuya deploy etmemek için) ---
 HOST=$(rssh hostname)
 [ "$HOST" = "$EXPECT_HOSTNAME" ] || fail "hedef hostname '$HOST', beklenen '$EXPECT_HOSTNAME'"
-PREV=$(rssh "cat /etc/veritut/DEPLOYED_SHA 2>/dev/null || git -C $APP_DIR rev-parse HEAD")
+# Depo veritut kullanıcısına ait: root ile git çalıştırmak "dubious ownership" ile düşer.
+PREV=$(rssh "cat /etc/veritut/DEPLOYED_SHA 2>/dev/null || sudo -u veritut git -C $APP_DIR rev-parse HEAD")
 echo "hedef: $HOST · önceki sürüm: ${PREV:0:12}"
 
 # --- 3. runner drain: aktif run varken runner'ı kesme ---

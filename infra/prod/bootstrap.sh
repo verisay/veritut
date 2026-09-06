@@ -107,6 +107,8 @@ if [ ! -d "$APP_DIR/.git" ]; then
 else
   sudo -u veritut git -C "$APP_DIR" fetch --all --prune
 fi
+# Teşhis için root'un da depoyu okuyabilmesi (sahiplik veritut'ta).
+git config --global --add safe.directory "$APP_DIR" 2>/dev/null || true
 # runner ve status uygulama kaynağını okumalı (çalıştırma), yazmamalı.
 setfacl -R -m u:veritut-runner:rX -m u:veritut-status:rX "$APP_DIR" 2>/dev/null || true
 setfacl -R -d -m u:veritut-runner:rX -d -m u:veritut-status:rX "$APP_DIR" 2>/dev/null || true
