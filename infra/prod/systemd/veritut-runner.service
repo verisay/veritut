@@ -1,0 +1,38 @@
+[Unit]
+Description=VERITUT runner (izole yürütücü: provision · provider-sync · drill)
+After=network-online.target redis-server.service
+Wants=network-online.target
+Requires=redis-server.service
+
+[Service]
+Type=simple
+# D5: runner AYRI kullanıcıdır — uygulama DB'sine erişimi yoktur, gelen portu yoktur.
+# D12: X25519 özel anahtarı YALNIZ bu birimin env dosyasındadır (0640 root:veritut-runner).
+User=veritut-runner
+Group=veritut-runner
+WorkingDirectory=/srv/veritut/app/apps/runner
+Environment=HOME=/var/lib/veritut-runner
+EnvironmentFile=/etc/veritut/runner.env
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+# Aktif run varken kapanış: job'a bitirme şansı ver (deploy.sh ayrıca kuyruk drain bekler).
+TimeoutStopSec=120
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/veritut-runner
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryMax=896M
+
+[Install]
+WantedBy=multi-user.target

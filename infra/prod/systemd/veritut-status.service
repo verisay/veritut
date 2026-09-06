@@ -1,0 +1,33 @@
+[Unit]
+Description=VERITUT status (stateless durum sayfası — yalnız Redis status:*)
+After=network-online.target redis-server.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# D14: status app'in DB/Keycloak/iç token erişimi YOKTUR. Ayrı UNIX kullanıcısı ve
+# yalnız STATUS_REDIS_URL taşıyan env dosyası bunu dev'deki compose ezmesinin yerine geçirir.
+User=veritut-status
+Group=veritut-status
+WorkingDirectory=/srv/veritut/app/apps/status
+EnvironmentFile=/etc/veritut/status.env
+ExecStart=/usr/bin/node build/index.js
+Restart=always
+RestartSec=3
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryMax=256M
+
+[Install]
+WantedBy=multi-user.target

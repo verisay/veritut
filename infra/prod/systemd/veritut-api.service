@@ -1,0 +1,38 @@
+[Unit]
+Description=VERITUT API (Express 5)
+Documentation=https://github.com/verisay/veritut
+After=network-online.target postgresql.service redis-server.service
+Wants=network-online.target
+Requires=postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=veritut
+Group=veritut
+WorkingDirectory=/srv/veritut/app/apps/api
+# common.env: DB + Redis + Keycloak + yüzey URL'leri. api.env: PORT ve API'ye özel.
+# RUNNER_PRIVATE_KEY bu dosyaların HİÇBİRİNDE yok (D12) — yalnız /etc/veritut/runner.env'de.
+EnvironmentFile=/etc/veritut/common.env
+EnvironmentFile=/etc/veritut/api.env
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryMax=640M
+
+[Install]
+WantedBy=multi-user.target

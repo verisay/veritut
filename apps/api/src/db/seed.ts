@@ -26,11 +26,16 @@ async function main(): Promise<void> {
     .onConflictDoNothing();
 
   // Platform bileşenleri — worker probe eder, status app gösterir (D14).
+  // Probe adresleri ORTAMDAN gelir: dev'de compose alias'ları, prod'da 127.0.0.1 portları.
+  const apiBase = process.env.API_URL ?? 'http://veritut-api:4400';
+  const portalBase = process.env.PORTAL_INTERNAL_URL ?? 'http://veritut-portal:5240';
+  const opsBase = process.env.OPS_INTERNAL_URL ?? 'http://veritut-ops:5241';
+  const kcBase = process.env.KC_INTERNAL_URL ?? 'http://veritut-keycloak:8080';
   const platform = [
-    { slug: 'api', name: 'API', probeUrl: 'http://veritut-api:4400/api/v1/health', sort: 10 },
-    { slug: 'portal', name: 'Müşteri portalı', probeUrl: 'http://veritut-portal:5240/', sort: 20 },
-    { slug: 'ops', name: 'Operasyon paneli', probeUrl: 'http://veritut-ops:5241/giris', sort: 30 },
-    { slug: 'kimlik', name: 'Kimlik (SSO)', probeUrl: 'http://veritut-keycloak:8080/realms/veritut-musteri', sort: 40 },
+    { slug: 'api', name: 'API', probeUrl: `${apiBase}/api/v1/health`, sort: 10 },
+    { slug: 'portal', name: 'Müşteri portalı', probeUrl: `${portalBase}/`, sort: 20 },
+    { slug: 'ops', name: 'Operasyon paneli', probeUrl: `${opsBase}/giris`, sort: 30 },
+    { slug: 'kimlik', name: 'Kimlik (SSO)', probeUrl: `${kcBase}/realms/veritut-musteri`, sort: 40 },
     { slug: 'runner', name: 'Provizyon kuyruğu', probeUrl: null, sort: 50 },
   ];
   for (const c of platform) {

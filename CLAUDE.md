@@ -10,6 +10,10 @@ Web: **SvelteKit 2 + Svelte 5 runes** | API: **Express 5** | Kuyruk: **Redis 7 +
 > **Kalan işler:** `docs/kalan-isler.md` — açık borçlar, K5/K6 kapsamı, kod dışı işler, lansman kontrol listesi.
 > **API sözleşmesi:** `docs/api-sozlesme.md` (bağlayıcı). **Tasarım sistemi:** Claude Design
 > "Veritut Design System" v1.0 → `packages/ui/src/lib/tokens.css` (verbatim).
+> **Oturum:** Bu depo kendi kendine yeter — Claude Code oturumu doğrudan
+> `/srv/fleet/projects/veritut` içinde açılır (gerçek yol `/mnt/HC_Volume_106149716/projects/veritut`,
+> ikisi aynı projeye çözülür). Proje hafızası ve izin listesi bu dizine bağlı; musteri-kulubu
+> deposundan çalıştırmak gerekmez.
 
 ---
 
@@ -95,7 +99,20 @@ docker compose -f infra/compose.dev.yml exec api pnpm db:seed
 - Dev kimlikler (realm import): `musteri@veritut.local` / `ops@veritut.local` — parolalar realm JSON'unda, **yalnız dev**; prod realm export'u ayrı ve MFA `CONFIGURE_TOTP` zorunlu.
 - Tip kontrolü `pnpm check`, test `pnpm test`, lint `pnpm lint` (container içinden veya Node 22 olan host'ta).
 
-**Prod:** K3 sonunda (plan §13) — systemd sertleştirilmiş birimler + pull-based `deploy.sh`; runner ayrı sunucu; status ayrı tedarikçi. Şimdilik prod YOK.
+**Prod (2026-09-07'den beri ayakta):** `2.29.31.37` — hostname `veritut-prod`, Ubuntu 26.04, 2 vCPU / 3 GB / 38 GB (Hetzner).
+Plan §13 altı sunucu öngörür; şimdilik **tek makine**: api·worker·runner·portal·ops·status·keycloak·postgres16·redis·minio·nginx,
+hepsi systemd birimi ve ayrı UNIX kullanıcıları (`veritut`, `veritut-runner`, `veritut-status`, `keycloak`, `minio`).
+Kurulum ve işletim: `infra/prod/` (`bootstrap.sh` · `render-env.sh` · `deploy.sh` · `smoke.sh` · `kc-import.sh` · `tls-issue.sh`),
+ayrıntı `infra/prod/README.md`, sapmalar `docs/kararlar.md` #37–#41.
+
+```bash
+RUN_MIGRATION=1 bash infra/prod/deploy.sh   # iş istasyonundan: ön kontrol → build → migration → restart → smoke → kırmızıysa geri alma
+ssh root@2.29.31.37 'bash /srv/veritut/app/infra/prod/smoke.sh'
+```
+
+Sırlar `/etc/veritut/secrets.env` (0600 root) → servis başına env; **`RUNNER_PRIVATE_KEY` yalnız `runner.env`'de** (grup `veritut-runner`,
+`veritut` kullanıcısı okuyamaz — smoke ölçer). Alan adı `veritut.com` henüz DNS'te yok: sertifika şimdilik self-signed,
+DNS yöneldiğinde `infra/prod/tls-issue.sh`. Status ayrı tedarikçide DEĞİL ve yedekler aynı makinede — `docs/kalan-isler.md` B1a/B1b.
 
 ---
 
@@ -133,6 +150,10 @@ docker compose -f infra/compose.dev.yml exec api pnpm db:seed
 20. **Belge PDF'i gömülü TTF ister.** pdfkit'in yerleşik Helvetica'sı WinAnsi'dir; ğ/ş/ı taşımaz. API imajında `fonts-dejavu-core` var ve `document.service.ts` `/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf` gömer. Yeni imaj/sunucuda bu paket atlanırsa Türkçe belgeler bozuk çıkar (Klasman OG-image dersi).
 21. **`pnpm check` eşzamanlılığı 2 ile sınırlı** — AWS SDK + Svelte tipleri paralel derlenince tsc SIGTERM (OOM) alıyor. Kök `package.json` `turbo run check --concurrency=2`.
 22. **Blueprint `tofu/` her tofu değişkenini `blueprint.yaml`'dan alır:** inputs + `sizes[].vars` + region/size/residency/tenant_slug/workload_slug/workload_id. Destroy/resize payload'ı da `sizeVars` taşımalı, yoksa "No value for required variable".
+23. **Keycloak'ta build-time seçenekler start ile değişmez:** `KC_DB`, `KC_HEALTH_ENABLED` gibi değerler `kc.sh build` sırasında sabitlenir; env'de değiştirip `start --optimized` demek "differ from what is persisted" ile süreci düşürür. Değişince yeniden `build`.
+24. **Keycloak yönetim arayüzü varsayılan 9000'i ister** — MinIO orada. Prod'da `KC_HTTP_MANAGEMENT_PORT=9990`; `kc.sh import` komutuna da geçilmeli, yoksa import "Address already in use" ile düşer.
+25. **MinIO AF_NETLINK ister:** systemd `RestrictAddressFamilies` listesinde yoksa açılışta `Unable to get IP addresses of this host` ile ölür.
+26. **`/etc/veritut` modu 0751:** 0750 olursa servis kullanıcıları dizini geçemez ve `EnvironmentFile` dışındaki elle çalıştırmalar (migration, seed) env'i okuyamaz.
 
 ---
 

@@ -1,6 +1,6 @@
 # VERITUT — kalan işler
 
-Son güncelleme: 2026-09-06 · K0–K4 tamamlandı (288 smoke senaryosu yeşil, 4 commit GitHub'da).
+Son güncelleme: 2026-09-07 · K0–K4 tamamlandı (288 smoke senaryosu yeşil) · prod sunucu ayakta (`2.29.31.37`, tek makine).
 Kaynak: `ai-plans/VERITUT-Uygulama-Plani.md` §14 (fazlar) ve §17 (açılış kontrol listesi).
 Bu dosya **yaşayan listedir**: bir madde kapanınca buradan silinir, ilgili faz notu `CLAUDE.md` §7'ye yazılır.
 
@@ -12,19 +12,24 @@ Bu dosya **yaşayan listedir**: bir madde kapanınca buradan silinir, ilgili faz
 
 | # | Konu | Durum | Önem | Nereye ait |
 | --- | --- | --- | --- | --- |
-| B1 | **Prod topolojisi ve deploy yok.** `infra/prod/` boş, `deploy.sh` hiç yazılmadı. Şu an kod yalnız dev filosunda çalışıyor; prod'a çıkış yolu tanımsız. | açık | **kritik** | plan §13, K3 çıkışı olmalıydı |
+| B1 | **Prod topolojisi ve deploy** — `infra/prod/` yazıldı, `2.29.31.37` (`veritut-prod`) ayakta: 11 servis aktif, 5 migration + seed uygulandı, smoke yeşil. Kalan: DNS/TLS (D3), `deploy.sh` provası, geri alma provası. | **kısmen kapandı** | **kritik** | plan §13, `infra/prod/README.md` |
+| B1a | **Status ana yığınla aynı makinede.** Plan §13 ayrı tedarikçi ister; şu an ana yığın düşerse durum sayfası da düşer. | açık | **kritik** | D14, plan §13 |
+| B1b | **Yedekler aynı makinede (MinIO).** 3-2-1'in offsite bacağı yok; VERITUT'un kendi DB'si için yedek/restore tatbikatı da yapılmadı. | açık | **kritik** | plan §13, §17 |
+| B1c | **Runner fiziksel olarak ayrı değil.** İzolasyon UNIX kullanıcısı + systemd düzeyinde (`veritut-runner`, DB kimliği yok, gelen port yok); ikinci sunucu gelince taşınacak. | açık | yüksek | D5, kararlar #37 |
 | B2 | **Prometheus/Alertmanager tarafı eksik.** `workloads.monitoring_targets` doldurulur ama `file_sd` dosyası üretilmiyor, Prometheus/Alertmanager yapılandırması yok, portal grafik proxy'si (`query_range`) yazılmadı. Alarm ALICI ucu hazır; alarm ÜRETEN taraf yok. | açık | **kritik** | D16, plan §9 |
 | B3 | **Runbook kütüphanesi boş.** `infra/runbooks/` dizini var, içi boş. Değişiklik yönetimi çalışıyor ama yazılı prosedür yok. | açık | yüksek | plan §14 K4/6, §5.2 |
 | B4 | **E-posta sahte sağlayıcıda.** `MAIL_PROVIDER=mock`; davet, bildirim ve rapor e-postaları yalnız loglanıyor. SMTP/Mailjet adaptörü yazılmadı. | açık | yüksek | D9, K3 borcu |
 | B5 | **Teleport CE kurulmadı.** `access.session` ucu ve kanıt akışı hazır, gerçek oturum kaydı yok; bastion `tlog` ingest'i de bağlanmadı. | açık | yüksek | plan §7.5, K4 borcu |
 | B6 | **Hetzner apply gerçek token beklemiyor ama hiç koşulmadı.** `managed-vps`, `n8n`, `nextcloud`, `zammad` blueprint'leri yalnız `tofu validate` + `ansible --syntax-check` geçti. Gece entegrasyon işi (`.github/workflows/nightly-hetzner.yml`) `HCLOUD_TOKEN` secret'ı olmadan atlanıyor. | açık | yüksek | K2 borcu |
 | B7 | **FOSSBilling ve Zammad canlı credential yok.** Adaptörler yazıldı; dev'de mock, aynı webhook yolunu kullanıyor. Geçiş adaptör değişimi. | açık | orta | D17/D18 |
-| B8 | **Prod Keycloak realm'inde MFA zorunlu değil.** Dev realm'inde `CONFIGURE_TOTP` kapalı (bilinçli, smoke için); prod export'unda zorunlu olmalı. | açık | orta | D6, kararlar #5 |
+| B8 | **Prod realm'inde MFA** — `render-realms.mjs` ops realm'inde `CONFIGURE_TOTP` varsayılan zorunlu üretiyor ve prod'a aktarıldı. Kalan: break-glass hesabının denenmesi ve kanıt düşmesi. | **kısmen kapandı** | orta | D6, kararlar #5/#41 |
 | B9 | **Sentry ve Umami bağlanmadı.** pino var; hata izleme ve KVKK dostu analitik yok. | açık | orta | D23 |
 | B10 | **Loki yok.** Log toplama merkezîleştirilmedi. | açık | düşük | plan §14 K4/10 |
 | B11 | **Lighthouse ölçümü yapılmadı.** Public sayfalar `csr=false` yazıldı, performans hedefi (≥95) ölçülmedi. | açık | düşük | D21, K3 kabul |
 | B12 | **Keycloak istemci provizyonu bootstrap admin ile.** Uygulama blueprint'leri OIDC istemcisini `KC_ADMIN_*` ile açıyor; prod'da dar yetkili servis hesabı olmalı. | açık | orta | kararlar #21 |
 | B13 | **Staging ortamı yok.** Plan Faz 2'de öngörülmüştü. | açık | orta | plan §13 |
+| B14 | **Prod'da e-posta, faturalama ve destek sağlayıcıları `mock`.** Kurulum bilinçli olarak mock ile açıldı; canlıya B4/B7 ile geçilir. | açık | yüksek | D9/D17/D18 |
+| B15 | **Prod yedekleme otomasyonu yok:** Postgres için pg_dump zamanlaması, MinIO içeriği için offsite kopya, restore prosedürü yazılmadı. | açık | **kritik** | plan §13 |
 
 **Kapanan borçlar** (kayıt için): dini bayram takvimi seed'i (K4'te 41 gün), sapma taraması cron'u (K4), kanıt paketi PDF (K4), `restore_drills` gerçek uygulaması (K4).
 
@@ -76,13 +81,13 @@ Bayi ve beyaz etiket (hiyerarşik kiracı, bayi fiyat listesi, marka override) �
 
 | Madde | Durum |
 | --- | --- |
-| Domain + DNS + wildcard sertifika | ✗ D3 |
-| `deploy.sh` 3 kez sorunsuz + rollback provası | ✗ B1 |
-| Status sayfası farklı tedarikçide, ana yığın kapalıyken ayakta | ✗ B1 (kod hazır: stateless, yalnız Redis snapshot) |
-| VERITUT'un kendi DB'si için offsite yedek + restore tatbikatı | ✗ B1 + K5.9 |
+| Domain + DNS + wildcard sertifika | ✗ D3 — sunucu hazır, `infra/prod/tls-issue.sh` DNS'i bekliyor (şimdilik self-signed) |
+| `deploy.sh` 3 kez sorunsuz + rollback provası | ~ `deploy.sh` yazıldı; ilk kurulum elle koşuldu, 3'lü prova ve geri alma provası yapılmadı |
+| Status sayfası farklı tedarikçide, ana yığın kapalıyken ayakta | ✗ B1a — prod'da aynı makinede çalışıyor |
+| VERITUT'un kendi DB'si için offsite yedek + restore tatbikatı | ✗ B1b + B15 |
 | Kiracı izolasyon e2e + fail-closed testleri CI'da zorunlu | ~ testler var (288 senaryo), CI'da yalnız birim + tip + tofu validate koşuyor; smoke paketleri CI'ya bağlanmadı |
-| Runner sunucusu: gelen port yok, anahtar 600, rotasyon runbook'u denendi | ✗ B1 + B3 |
-| Keycloak ops realm MFA zorunlu + break-glass testi | ✗ B8 |
+| Runner sunucusu: gelen port yok, anahtar 600, rotasyon runbook'u denendi | ~ gelen port yok ve anahtar yalnız `runner.env`'de (smoke ölçüyor); ayrı sunucu ve rotasyon runbook'u ✗ B1c + B3 |
+| Keycloak ops realm MFA zorunlu + break-glass testi | ~ MFA zorunlu (prod realm'de); break-glass hesabı ve testi ✗ |
 | FOSSBilling canlı + PayTR callback testi + deneme→askı→yıkım | ~ akış kodda testli (mock), canlı ✗ D6 |
 | Hukuk metinleri onaylı | ✗ D1 |
 | Hetzner ≥2 hesap, AWS/GCP başvuruları açık | ✗ D5 |
@@ -94,7 +99,7 @@ Bayi ve beyaz etiket (hiyerarşik kiracı, bayi fiyat listesi, marka override) �
 
 ## 6. Önerilen sıra
 
-1. **B1 + B2** (prod topolojisi, deploy, gözlem yığını) — bunlar olmadan hiçbir kabul ölçütü gerçek ortamda kanıtlanamaz.
+1. **D3 + B2** (alan adı/TLS ve gözlem yığını) — prod makine ayakta; eksik olan alan adı ve alarm üreten taraf. Ardından **B15/B1b** (yedek + restore tatbikatı) ve **B1a** (status'u ayrı tedarikçiye).
 2. **D7** (mevcut hizmet envanteri) — gerçek brüt marj sayısı stratejik planın en kritik doğrulaması.
 3. **B3, B4, B5** (runbook, e-posta, Teleport) — "yönetilen" sözünün operasyonel karşılığı.
 4. **D1, D5** (hukuk, ortaklık başvuruları) — süreleri uzun, paralel yürütülmeli.

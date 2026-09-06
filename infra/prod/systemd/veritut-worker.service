@@ -1,0 +1,35 @@
+[Unit]
+Description=VERITUT worker (BullMQ: probe · notify · report · rollup)
+After=network-online.target redis-server.service veritut-api.service
+Wants=network-online.target
+Requires=redis-server.service
+
+[Service]
+Type=simple
+User=veritut
+Group=veritut
+WorkingDirectory=/srv/veritut/app/apps/worker
+# Worker'ın DB kimliği YOKTUR (D5) — yalnız Redis + INTERNAL_TOKEN'lı /internal uçları.
+EnvironmentFile=/etc/veritut/worker.env
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryMax=384M
+
+[Install]
+WantedBy=multi-user.target
