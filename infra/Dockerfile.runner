@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && if [ "$INSTALL_IAC" = "1" ]; then \
          apt-get install -y --no-install-recommends ansible restic \
          && curl -fsSL "https://github.com/opentofu/opentofu/releases/download/v${OPENTOFU_VERSION}/tofu_${OPENTOFU_VERSION}_linux_amd64.zip" -o /tmp/tofu.zip \
-         && unzip -o /tmp/tofu.zip tofu -d /usr/local/bin && rm /tmp/tofu.zip && tofu version ; \
+         && unzip -o /tmp/tofu.zip tofu -d /usr/local/bin && rm /tmp/tofu.zip && tofu version \
+         && ansible-galaxy collection install 'community.docker:>=3.10.0,<5' 'community.general:>=8.0.0,<10' -p /usr/share/ansible/collections ; \
        fi \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app

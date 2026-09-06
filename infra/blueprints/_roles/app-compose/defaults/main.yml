@@ -1,0 +1,4 @@
+app_name: ""
+app_compose: ""        # docker compose YAML metni
+app_env: {}            # .env içeriği (sırlar dahil — no_log)
+app_dir: "/opt/veritut/apps/{{ app_name }}"

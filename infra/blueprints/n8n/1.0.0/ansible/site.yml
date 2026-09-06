@@ -1,0 +1,53 @@
+- hosts: target
+  become: true
+  gather_facts: true
+  pre_tasks:
+    - command: cloud-init status --wait
+      changed_when: false
+      failed_when: false
+  roles:
+    - { role: docker-host, vars: { docker_host_admin_email: "{{ admin_email }}" } }
+    - role: keycloak-oidc-client
+      vars:
+        kc_client_id: "{{ tenant_slug }}-{{ workload_slug }}"
+        kc_client_name: "n8n · {{ tenant_slug }}"
+        kc_root_url: "https://{{ hostname }}.{{ domain }}"
+        kc_redirect_uris: ["https://{{ hostname }}.{{ domain }}/rest/sso/oidc/callback"]
+    - role: app-compose
+      vars:
+        app_name: n8n
+        app_env:
+          N8N_HOST: "{{ hostname }}.{{ domain }}"
+          N8N_PROTOCOL: https
+          WEBHOOK_URL: "https://{{ hostname }}.{{ domain }}/"
+          N8N_ENCRYPTION_KEY: "{{ lookup('env', 'VT_SECRET_ADMIN_PASSWORD') | hash('sha256') }}"
+          GENERIC_TIMEZONE: Europe/Istanbul
+          N8N_SSO_OIDC_ISSUER: "{{ oidc_issuer }}"
+          N8N_SSO_OIDC_CLIENT_ID: "{{ oidc_client_id }}"
+          N8N_SSO_OIDC_CLIENT_SECRET: "{{ oidc_client_secret }}"
+        app_compose: |
+          services:
+            caddy:
+              image: caddy:2.8
+              restart: unless-stopped
+              ports: ["80:80", "443:443"]
+              command: caddy reverse-proxy --from {{ hostname }}.{{ domain }} --to n8n:5678
+              volumes: [caddy_data:/data]
+            n8n:
+              image: docker.n8n.io/n8nio/n8n:1.70.1
+              restart: unless-stopped
+              env_file: .env
+              volumes: [n8n_data:/home/node/.n8n]
+          volumes: { caddy_data: {}, n8n_data: {} }
+    - role: restic-backup
+      vars:
+        restic_backup_paths: [/opt/veritut/apps/n8n, /var/lib/docker/volumes/n8n_n8n_data]
+        restic_report_url: "{{ lookup('env', 'VT_REPORT_URL') }}"
+        restic_report_token: "{{ lookup('env', 'VT_REPORT_TOKEN') }}"
+  tasks:
+    - name: ansible çıktıları
+      delegate_to: localhost
+      become: false
+      copy:
+        dest: "{{ lookup('env', 'WORK_DIR') | default('/var/lib/veritut/work', true) }}/{{ workload_id }}/ansible-outputs.json"
+        content: "{{ { 'oidc_client_id': oidc_client_id, 'app': 'n8n' } | to_json }}"

@@ -3,6 +3,7 @@ import { RUN_STEPS } from '@veritut/types';
 import { closeContext, connection, finish, log, logger, runnerKey, step } from './jobs/context.js';
 import { runProviderSync } from './jobs/provider-sync.js';
 import { runBackup } from './jobs/backup.js';
+import { runProvision, type ProvisionPayload } from './jobs/provision.js';
 
 /**
  * Runner (D5): tedarikçiye dokunan TEK süreç; X25519 özel anahtarı yalnız burada.
@@ -41,6 +42,9 @@ const provisionWorker = new Worker(
         const d = job.data;
         return await runBackup(runId, { workloadId: d.workloadId!, backupJobId: d.backupJobId!, repoId: d.repoId!, paths: d.paths ?? [], retention: d.retention ?? '', workloadSlug: d.workloadSlug ?? '' });
       }
+      if (['provision', 'resize', 'destroy', 'upgrade', 'drift-plan'].includes(kind)) {
+        return await runProvision(job.data as unknown as ProvisionPayload);
+      }
       await log(runId, `desteklenmeyen kind: ${kind} (K2'de gelir)`, 'err');
       await finish(runId, 'failed', 2, { reason: 'unsupported_kind' });
     } catch (err) {
@@ -50,7 +54,8 @@ const provisionWorker = new Worker(
       throw err;
     }
   },
-  { connection, concurrency: 2, lockDuration: 120_000 },
+  // lockDuration/stalledInterval: runner çökerse job ≤30 sn'de 'stalled' sayılır ve yeniden alınır; run_steps ile kaldığı adımdan devam (plan §3.3).
+  { connection, concurrency: 2, lockDuration: 30_000, stalledInterval: 15_000, maxStalledCount: 3 },
 );
 provisionWorker.on('ready', () => logger.info('runner hazır — kuyruk: provision'));
 provisionWorker.on('failed', (job, err) => logger.error({ jobId: job?.id, err: err.message }, 'provision başarısız'));

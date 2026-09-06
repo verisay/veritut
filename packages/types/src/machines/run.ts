@@ -23,7 +23,7 @@ export const runMachine = defineMachine<RunStatus>({
   name: 'run',
   initial: 'queued',
   transitions: {
-    queued: ['running', 'cancelled'],
+    queued: ['running', 'failed', 'cancelled'], // failed: ilk adıma varamadan (kilit, kuyruk) düşen job
     running: ['awaiting_approval', 'succeeded', 'failed', 'cancelled'],
     awaiting_approval: ['running', 'cancelled'],
     succeeded: [],

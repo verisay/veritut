@@ -1,0 +1,56 @@
+# docker-host — VERITUT ortak temel (plan §3.3 adım 5): sertleştirme, otomatik güvenlik yamaları,
+# Docker, ufw, fail2ban, node_exporter, restic. Ubuntu 24.04 varsayımı.
+- name: apt güncelle
+  apt: { update_cache: true, cache_valid_time: 3600 }
+- name: Temel paketler
+  apt:
+    name: [ca-certificates, curl, gnupg, ufw, fail2ban, unattended-upgrades, restic, jq, python3-pip]
+    state: present
+- name: Zaman dilimi
+  timezone: { name: "{{ docker_host_timezone }}" }
+- name: Docker apt anahtarı
+  shell: |
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    chmod a+r /etc/apt/keyrings/docker.asc
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" > /etc/apt/sources.list.d/docker.list
+  args: { creates: /etc/apt/sources.list.d/docker.list }
+- name: Docker kur
+  apt: { name: [docker-ce, docker-ce-cli, containerd.io, docker-compose-plugin], state: present, update_cache: true }
+- name: Docker servisi
+  service: { name: docker, state: started, enabled: true }
+- name: SSH sertleştirme
+  copy:
+    dest: /etc/ssh/sshd_config.d/90-veritut.conf
+    content: |
+      PasswordAuthentication no
+      PermitRootLogin prohibit-password
+      X11Forwarding no
+      MaxAuthTries 3
+  notify: sshd yeniden yükle
+- name: Otomatik güvenlik yamaları
+  copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+- name: ufw varsayılan
+  ufw: { state: enabled, policy: deny, direction: incoming }
+- name: ufw izinli portlar
+  ufw: { rule: allow, port: "{{ item }}", proto: tcp }
+  loop: "{{ [docker_host_ssh_port, 80, 443] + docker_host_allow_ports }}"
+- name: fail2ban
+  service: { name: fail2ban, state: started, enabled: true }
+- name: node_exporter (docker)
+  when: docker_host_node_exporter
+  community.docker.docker_container:
+    name: node_exporter
+    image: quay.io/prometheus/node-exporter:v1.8.2
+    restart_policy: unless-stopped
+    network_mode: host
+    pid_mode: host
+    volumes: ["/:/host:ro,rslave"]
+    command: ["--path.rootfs=/host"]
+- name: VERITUT dizinleri
+  file: { path: "{{ item }}", state: directory, mode: "0750" }
+  loop: [/opt/veritut, /opt/veritut/apps, /var/backups/veritut]

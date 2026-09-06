@@ -1,0 +1,19 @@
+# mock-vps yapılandırması — runner'da local bağlantı. Gerçek docker-host rolü değil; işaret dosyası + çıktı üretir.
+- hosts: target
+  gather_facts: false
+  tasks:
+    - name: Çalışma dizini
+      file: { path: "{{ lookup('env', 'WORK_DIR') | default('/var/lib/veritut/work', true) }}/{{ workload_id }}/mock", state: directory }
+    - name: İşaret dosyası (sertleştirme simülasyonu)
+      copy:
+        dest: "{{ lookup('env', 'WORK_DIR') | default('/var/lib/veritut/work', true) }}/{{ workload_id }}/mock/hardened"
+        content: "hostname={{ hostname }} size={{ size }} monitoring={{ monitoring }} residency={{ residency }}\n"
+    - name: Root parolası YALNIZ env'den (loga düşmez)
+      assert:
+        that: lookup('env', 'VT_SECRET_ROOT_PASSWORD') | length >= 12
+        fail_msg: "sır env'i eksik"
+      no_log: true
+    - name: Ansible çıktıları (runner outputs'a ekler)
+      copy:
+        dest: "{{ lookup('env', 'WORK_DIR') | default('/var/lib/veritut/work', true) }}/{{ workload_id }}/ansible-outputs.json"
+        content: "{{ { 'hardened': true, 'node_exporter': monitoring } | to_json }}"

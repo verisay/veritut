@@ -1,6 +1,7 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, ResidencyBadge, StatusDot } from '@veritut/ui';
+  import { Card, Table, Button, ResidencyBadge, StatusDot, Modal } from '@veritut/ui';
+  let destroyOpen = $state(false);
   import { WORKLOAD_STATUS_LABEL, type WorkloadStatus } from '@veritut/types';
   import { formatDateTime, formatDuration } from '@veritut/shared';
   let { data, form } = $props();
@@ -11,8 +12,34 @@
 <p class="vt-kicker"><a href="/is-yukleri">İş yükleri</a> / {w.slug}</p>
 <div style="display:flex; justify-content:space-between; align-items:flex-end; margin:4px 0 20px; gap:16px">
   <div><h1 class="vt-h1">{w.name} <ResidencyBadge residency={w.residency} /></h1><p class="vt-help" style="margin:4px 0 0">{w.productSlug} · {w.providerCode ?? '—'}{w.region ? `/${w.region}` : ''} · {WORKLOAD_STATUS_LABEL[w.status as WorkloadStatus] ?? w.status} · <a href="/kiracilar/{w.tenantId}">kiracı</a></p></div>
-  <form method="POST" action="?/backup" use:enhance><Button type="submit" variant="soft" disabled={!data.policy}>Yedek al (şimdi)</Button></form>
+  <div style="display:flex; gap:8px; align-items:center">
+    {#if w.lastRunId}<a href="/calistirmalar/{w.lastRunId}" class="vt-btn vt-btn-ghost vt-btn-sm">Son çalıştırma</a>{/if}
+    <form method="POST" action="?/backup" use:enhance><Button type="submit" variant="soft" disabled={!data.policy}>Yedek al (şimdi)</Button></form>
+    {#if w.blueprintSlug}<Button variant="danger" onclick={() => (destroyOpen = true)} disabled={w.status === 'destroyed' || w.status === 'decommissioning'}>İş yükünü yok et</Button>{/if}
+  </div>
 </div>
+<Modal bind:open={destroyOpen} title="İş yükünü yok etmek istiyor musunuz?">
+  <p style="margin:0">Yüksek riskli değişiklik: <span class="mono">tofu destroy</span>. Başarılı bir yedek kanıtı olmadan başlamaz; plan sonrası talep edenden farklı bir kıdemli operatör onaylar (dört-göz).</p>
+  {#snippet actions()}<Button variant="ghost" onclick={() => (destroyOpen = false)}>Vazgeç</Button><form method="POST" action="?/destroy" use:enhance><Button variant="danger" type="submit">Yıkımı başlat</Button></form>{/snippet}
+</Modal>
+{#if form?.destroyRun}<div class="vt-status" data-state="degraded" style="margin-bottom:12px">Yıkım çalıştırması açıldı → <a href="/calistirmalar/{form.destroyRun}">plan ve onay</a></div>{/if}
+{#if form?.resizeRun}<div class="vt-status" data-state="ok" style="margin-bottom:12px">Boyut değişikliği başladı → <a href="/calistirmalar/{form.resizeRun}">canlı log</a></div>{/if}
+{#if w.blueprintSlug}
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; align-items:start">
+    <Card title="Blueprint" subtitle="{w.blueprintSlug}@{w.blueprintVersion}">
+      {#if w.endpoints?.length}<ul style="margin:0 0 10px; padding:0; list-style:none; display:grid; gap:4px">{#each w.endpoints as e (e.url)}<li style="font-size:13px">{e.label}: <a href={e.url} class="mono">{e.url}</a></li>{/each}</ul>{/if}
+      <div class="vt-codebox" style="font-size:11.5px">{JSON.stringify(w.outputs, null, 1).slice(0, 800)}</div>
+    </Card>
+    <Card title="Boyut değişikliği" subtitle="plan diff'e göre orta/yüksek risk">
+      {#if data.bp}
+        <form method="POST" action="?/resize" use:enhance style="display:flex; gap:10px; align-items:end">
+          <div style="flex:1"><label class="vt-label" for="size">Yeni boyut</label><select class="vt-input" id="size" name="size">{#each data.bp.sizes as s (s.code)}<option value={s.code} disabled={s.code === w.size}>{s.title_tr}{s.code === w.size ? ' (mevcut)' : ''}</option>{/each}</select></div>
+          <Button type="submit" variant="secondary" disabled={w.status !== 'active' && w.status !== 'degraded'}>Uygula</Button>
+        </form>
+      {/if}
+    </Card>
+  </div>
+{/if}
 {#if form?.message}<div class="vt-status" data-state="down" style="margin-bottom:12px">{form.message} {#if form.details}<code style="font-size:11px">{JSON.stringify(form.details)}</code>{/if}</div>{/if}
 {#if form?.backupRun}<div class="vt-status" data-state="ok" style="margin-bottom:12px">Yedek çalıştırması başladı → <a href="/calistirmalar/{form.backupRun}">canlı log</a></div>{/if}
 

@@ -21,6 +21,9 @@ import { createWorkload, getWorkloadOps, importWorkloadsCsv, listWorkloadsOps, u
 import { importInvoiceCsv, marginReport, upsertFx, upsertRevenue } from '../services/cost.service.js';
 import { createRepo, getPolicy, listJobs, listRepos, triggerBackup, upsertPolicy } from '../services/backup.service.js';
 import { listStaffNotifications, markRead } from '../services/notification.service.js';
+import { provisionRequestSchema } from '@veritut/validators';
+import { listBlueprints, loadBlueprints } from '../services/blueprint.service.js';
+import { approveRun, listChanges, rejectRun, requestDestroy, requestProvision, requestResize } from '../services/provisioning.service.js';
 
 /** Personel uçları — tümü `requireStaff` altında; kiracı bağlamı açık parametre + audit. */
 export const opsRouter: Router = Router();
@@ -115,6 +118,32 @@ opsRouter.put('/workloads/:id/backup-policy', validate(backupPolicySchema), asyn
 });
 opsRouter.post('/workloads/:id/backup', async (req, res, next) => {
   try { res.status(201).json(await triggerBackup(uuid.parse(req.params['id']), req.staff!.id)); } catch (e) { next(e); }
+});
+
+// ── Blueprint kataloğu + provizyon (K2) ───────────────────────────────────
+opsRouter.get('/blueprints', async (_req, res, next) => {
+  try { res.json(await listBlueprints()); } catch (e) { next(e); }
+});
+opsRouter.post('/blueprints/reload', requireStaffRole('platform_admin'), async (_req, res, next) => {
+  try { res.json({ n: (await loadBlueprints(true)).size }); } catch (e) { next(e); }
+});
+opsRouter.post('/workloads/provision', validate(provisionRequestSchema), async (req, res, next) => {
+  try { res.status(201).json(await requestProvision(req.body, req.staff!.id, req.ip ?? null)); } catch (e) { next(e); }
+});
+opsRouter.post('/workloads/:id/destroy', requireStaffRole('senior'), async (req, res, next) => {
+  try { res.status(201).json(await requestDestroy(uuid.parse(req.params['id']), req.staff!.id, req.ip ?? null)); } catch (e) { next(e); }
+});
+opsRouter.post('/workloads/:id/resize', validate(z.object({ size: z.string().min(1).max(40) })), async (req, res, next) => {
+  try { res.status(201).json(await requestResize(uuid.parse(req.params['id']), req.body.size, req.staff!.id, req.ip ?? null)); } catch (e) { next(e); }
+});
+opsRouter.post('/runs/:id/approve', requireStaffRole('senior'), async (req, res, next) => {
+  try { await approveRun(uuid.parse(req.params['id']), req.staff!.id, req.ip ?? null); res.status(204).end(); } catch (e) { next(e); }
+});
+opsRouter.post('/runs/:id/reject', requireStaffRole('senior'), validate(z.object({ reason: z.string().min(2).max(500) })), async (req, res, next) => {
+  try { await rejectRun(uuid.parse(req.params['id']), req.staff!.id, req.body.reason, req.ip ?? null); res.status(204).end(); } catch (e) { next(e); }
+});
+opsRouter.get('/changes', async (_req, res, next) => {
+  try { res.json(await listChanges()); } catch (e) { next(e); }
 });
 
 // ── Maliyet & marj ────────────────────────────────────────────────────────

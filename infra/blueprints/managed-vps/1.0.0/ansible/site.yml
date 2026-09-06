@@ -1,0 +1,29 @@
+- hosts: target
+  become: true
+  gather_facts: true
+  pre_tasks:
+    - name: cloud-init bitsin
+      command: cloud-init status --wait
+      changed_when: false
+      failed_when: false
+  roles:
+    - role: docker-host
+      vars:
+        docker_host_admin_email: "{{ admin_email }}"
+        docker_host_allow_ports: "{{ (extra_ports | default('')) | split(',') | reject('equalto', '') | map('int') | list }}"
+    - role: restic-backup
+      vars:
+        restic_backup_paths: [/opt/veritut/apps]
+        restic_report_url: "{{ lookup('env', 'VT_REPORT_URL') }}"
+        restic_report_token: "{{ lookup('env', 'VT_REPORT_TOKEN') }}"
+  tasks:
+    - name: volume mount (varsa)
+      when: outputs.volume_device | default('') | length > 0
+      block:
+        - mount: { path: /opt/veritut/apps, src: "{{ outputs.volume_device }}", fstype: ext4, opts: discard,nofail,defaults, state: mounted }
+    - name: ansible çıktıları
+      delegate_to: localhost
+      become: false
+      copy:
+        dest: "{{ lookup('env', 'WORK_DIR') | default('/var/lib/veritut/work', true) }}/{{ workload_id }}/ansible-outputs.json"
+        content: "{{ { 'hardened': true, 'docker': true } | to_json }}"

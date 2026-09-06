@@ -1,0 +1,70 @@
+- hosts: target
+  become: true
+  gather_facts: true
+  pre_tasks:
+    - command: cloud-init status --wait
+      changed_when: false
+      failed_when: false
+    - sysctl: { name: vm.max_map_count, value: "262144", state: present }
+    - set_fact:
+        zm_db_pass: "{{ lookup('env', 'VT_SECRET_ADMIN_PASSWORD') | hash('sha256') | truncate(32, true, '') }}"
+      no_log: true
+  roles:
+    - { role: docker-host, vars: { docker_host_admin_email: "{{ admin_email }}" } }
+    - role: keycloak-oidc-client
+      vars:
+        kc_client_id: "{{ tenant_slug }}-{{ workload_slug }}"
+        kc_client_name: "Zammad · {{ tenant_slug }}"
+        kc_root_url: "https://{{ hostname }}.{{ domain }}"
+        kc_redirect_uris: ["https://{{ hostname }}.{{ domain }}/auth/keycloak/callback"]
+    - role: app-compose
+      vars:
+        app_name: zammad
+        app_env:
+          POSTGRESQL_DB: zammad_production
+          POSTGRESQL_USER: zammad
+          POSTGRESQL_PASS: "{{ zm_db_pass }}"
+          POSTGRESQL_HOST: zammad-postgresql
+          ELASTICSEARCH_HOST: zammad-elasticsearch
+          REDIS_URL: redis://zammad-redis:6379
+          ZAMMAD_FQDN: "{{ hostname }}.{{ domain }}"
+          ZAMMAD_HTTP_TYPE: https
+        app_compose: |
+          services:
+            caddy:
+              image: caddy:2.8
+              restart: unless-stopped
+              ports: ["80:80", "443:443"]
+              command: caddy reverse-proxy --from {{ hostname }}.{{ domain }} --to zammad-nginx:8080
+              volumes: [caddy_data:/data]
+            zammad-postgresql:
+              image: postgres:15
+              restart: unless-stopped
+              environment: { POSTGRES_DB: zammad_production, POSTGRES_USER: zammad, POSTGRES_PASSWORD: "{{ zm_db_pass }}" }
+              volumes: [pg:/var/lib/postgresql/data]
+            zammad-elasticsearch:
+              image: bitnami/elasticsearch:8.15.0
+              restart: unless-stopped
+              volumes: [es:/bitnami/elasticsearch/data]
+            zammad-redis:
+              image: redis:7
+              restart: unless-stopped
+            zammad-init: { image: ghcr.io/zammad/zammad:6.4, command: ["zammad-init"], env_file: .env, depends_on: [zammad-postgresql], volumes: [zammad:/opt/zammad/storage] }
+            zammad-railsserver: { image: ghcr.io/zammad/zammad:6.4, command: ["zammad-railsserver"], restart: unless-stopped, env_file: .env, depends_on: [zammad-init], volumes: [zammad:/opt/zammad/storage] }
+            zammad-scheduler: { image: ghcr.io/zammad/zammad:6.4, command: ["zammad-scheduler"], restart: unless-stopped, env_file: .env, depends_on: [zammad-init], volumes: [zammad:/opt/zammad/storage] }
+            zammad-websocket: { image: ghcr.io/zammad/zammad:6.4, command: ["zammad-websocket"], restart: unless-stopped, env_file: .env, depends_on: [zammad-init] }
+            zammad-nginx: { image: ghcr.io/zammad/zammad:6.4, command: ["zammad-nginx"], restart: unless-stopped, env_file: .env, depends_on: [zammad-railsserver], volumes: [zammad:/opt/zammad/storage] }
+          volumes: { caddy_data: {}, pg: {}, es: {}, zammad: {} }
+    - role: restic-backup
+      vars:
+        restic_backup_pre_cmd: "docker compose -f /opt/veritut/apps/zammad/compose.yml exec -T zammad-postgresql pg_dump -U zammad zammad_production > /var/backups/veritut/zammad.sql"
+        restic_backup_paths: [/opt/veritut/apps/zammad, /var/lib/docker/volumes/zammad_zammad, /var/backups/veritut]
+        restic_report_url: "{{ lookup('env', 'VT_REPORT_URL') }}"
+        restic_report_token: "{{ lookup('env', 'VT_REPORT_TOKEN') }}"
+  tasks:
+    - name: ansible çıktıları (Keycloak SSO Zammad UI'dan Ayarlar → Güvenlik → Third-party ile bağlanır; client sırrı runner logunda yok)
+      delegate_to: localhost
+      become: false
+      copy:
+        dest: "{{ lookup('env', 'WORK_DIR') | default('/var/lib/veritut/work', true) }}/{{ workload_id }}/ansible-outputs.json"
+        content: "{{ { 'oidc_client_id': oidc_client_id, 'app': 'zammad' } | to_json }}"

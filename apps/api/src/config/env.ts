@@ -34,6 +34,8 @@ const envSchema = z.object({
   /** Worker/runner → API iç uçları. */
   INTERNAL_TOKEN: z.string().min(16),
 
+  /** Blueprint kök dizini (dev: /app/infra/blueprints; prod deploy'da repo içi). */
+  BLUEPRINTS_DIR: z.string().default(''),
   S3_ENDPOINT: z.string().default(''),
   S3_ACCESS_KEY: z.string().default(''),
   S3_SECRET_KEY: z.string().default(''),

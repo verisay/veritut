@@ -1,0 +1,5 @@
+docker_host_timezone: Europe/Istanbul
+docker_host_ssh_port: 22
+docker_host_allow_ports: []          # ek TCP portları (uygulama rolü ekler)
+docker_host_node_exporter: true
+docker_host_admin_email: ""

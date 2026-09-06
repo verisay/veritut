@@ -45,6 +45,8 @@ export const WORKLOAD_STATUS_LABEL: Record<WorkloadStatus, string> = {
   failed: 'Başarısız',
 };
 
+export const RUN_RISK_LABEL: Record<'low' | 'medium' | 'high', string> = { low: 'düşük', medium: 'orta', high: 'yüksek' };
+
 export const RUN_STATUS_LABEL: Record<RunStatus, string> = {
   queued: 'Sırada',
   running: 'Çalışıyor',

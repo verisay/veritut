@@ -23,7 +23,7 @@ export const workloadMachine = defineMachine<WorkloadStatus>({
     requested: ['provisioning', 'failed'],
     provisioning: ['active', 'degraded', 'failed'],
     active: ['degraded', 'suspended', 'decommissioning', 'provisioning'],
-    degraded: ['active', 'suspended', 'decommissioning'],
+    degraded: ['active', 'suspended', 'decommissioning', 'provisioning'],
     suspended: ['active', 'decommissioning'],
     decommissioning: ['destroyed', 'failed'],
     destroyed: [],

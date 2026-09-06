@@ -1,0 +1,74 @@
+- hosts: target
+  become: true
+  gather_facts: true
+  pre_tasks:
+    - command: cloud-init status --wait
+      changed_when: false
+      failed_when: false
+    - set_fact:
+        nc_db_pass: "{{ lookup('env', 'VT_SECRET_ADMIN_PASSWORD') | hash('sha256') | truncate(32, true, '') }}"
+      no_log: true
+  roles:
+    - { role: docker-host, vars: { docker_host_admin_email: "{{ admin_email }}" } }
+    - role: keycloak-oidc-client
+      vars:
+        kc_client_id: "{{ tenant_slug }}-{{ workload_slug }}"
+        kc_client_name: "Nextcloud · {{ tenant_slug }}"
+        kc_root_url: "https://{{ hostname }}.{{ domain }}"
+        kc_redirect_uris: ["https://{{ hostname }}.{{ domain }}/apps/user_oidc/code"]
+    - role: app-compose
+      vars:
+        app_name: nextcloud
+        app_env:
+          POSTGRES_DB: nextcloud
+          POSTGRES_USER: nextcloud
+          POSTGRES_PASSWORD: "{{ nc_db_pass }}"
+          POSTGRES_HOST: db
+          REDIS_HOST: redis
+          NEXTCLOUD_ADMIN_USER: admin
+          NEXTCLOUD_ADMIN_PASSWORD: "{{ lookup('env', 'VT_SECRET_ADMIN_PASSWORD') }}"
+          NEXTCLOUD_TRUSTED_DOMAINS: "{{ hostname }}.{{ domain }}"
+          OVERWRITEPROTOCOL: https
+        app_compose: |
+          services:
+            caddy:
+              image: caddy:2.8
+              restart: unless-stopped
+              ports: ["80:80", "443:443"]
+              command: caddy reverse-proxy --from {{ hostname }}.{{ domain }} --to app:80
+              volumes: [caddy_data:/data]
+            db:
+              image: postgres:16
+              restart: unless-stopped
+              env_file: .env
+              volumes: [db:/var/lib/postgresql/data]
+            redis:
+              image: redis:7
+              restart: unless-stopped
+            app:
+              image: nextcloud:30-apache
+              restart: unless-stopped
+              env_file: .env
+              depends_on: [db, redis]
+              volumes: [nc_data:/var/www/html]
+          volumes: { caddy_data: {}, db: {}, nc_data: {} }
+    - role: restic-backup
+      vars:
+        restic_backup_pre_cmd: "docker compose -f /opt/veritut/apps/nextcloud/compose.yml exec -T db pg_dump -U nextcloud nextcloud > /var/backups/veritut/nextcloud.sql"
+        restic_backup_paths: [/opt/veritut/apps/nextcloud, /var/lib/docker/volumes/nextcloud_nc_data, /var/backups/veritut]
+        restic_report_url: "{{ lookup('env', 'VT_REPORT_URL') }}"
+        restic_report_token: "{{ lookup('env', 'VT_REPORT_TOKEN') }}"
+  tasks:
+    - name: user_oidc kur ve yapılandır
+      shell: |
+        cd /opt/veritut/apps/nextcloud
+        for i in $(seq 1 30); do docker compose exec -T -u www-data app php occ status 2>/dev/null | grep -q 'installed: true' && break; sleep 10; done
+        docker compose exec -T -u www-data app php occ app:install user_oidc || true
+        docker compose exec -T -u www-data app php occ user_oidc:provider veritut --clientid="{{ oidc_client_id }}" --clientsecret="{{ oidc_client_secret }}" --discoveryuri="{{ oidc_issuer }}/.well-known/openid-configuration" --unique-uid=0 --mapping-email=email --mapping-display-name=name
+      no_log: true
+    - name: ansible çıktıları
+      delegate_to: localhost
+      become: false
+      copy:
+        dest: "{{ lookup('env', 'WORK_DIR') | default('/var/lib/veritut/work', true) }}/{{ workload_id }}/ansible-outputs.json"
+        content: "{{ { 'oidc_client_id': oidc_client_id, 'app': 'nextcloud' } | to_json }}"

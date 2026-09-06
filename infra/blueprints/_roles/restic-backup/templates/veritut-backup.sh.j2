@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# VERITUT yedek (restic) — sonucu API'ye raporlar → backup.completed|failed kanıtı.
+set -uo pipefail
+set -a; . /etc/veritut/restic.env; set +a
+T0=$(date +%s); STATUS=completed; ERR=""; SNAP=""; BYTES=""; FILES=""
+{{ restic_backup_pre_cmd }}
+restic snapshots -q >/dev/null 2>&1 || restic init
+OUT=$(restic backup --json --tag workload:{{ workload_slug }} {{ restic_backup_paths | join(' ') }} 2>&1) || { STATUS=failed; ERR=$(echo "$OUT" | tail -c 3000); }
+if [ "$STATUS" = completed ]; then
+  SUM=$(echo "$OUT" | grep '"message_type":"summary"' | tail -1)
+  SNAP=$(echo "$SUM" | jq -r .snapshot_id); BYTES=$(echo "$SUM" | jq -r .total_bytes_processed); FILES=$(echo "$SUM" | jq -r .total_files_processed)
+  restic forget --prune {{ restic_backup_retention }} >/dev/null 2>&1 || true
+  restic check --read-data-subset=5% >/dev/null 2>&1 || { STATUS=failed; ERR="restic check başarısız"; }
+fi
+DUR=$(( $(date +%s) - T0 ))
+[ -n "{{ restic_report_url }}" ] && curl -fsS -m 20 -X POST "{{ restic_report_url }}/api/v1/internal/backup-result" \
+  -H "content-type: application/json" -H "x-internal-token: {{ restic_report_token }}" \
+  -d "$(jq -n --arg w "{{ workload_id }}" --arg s "$STATUS" --arg snap "$SNAP" --arg e "$ERR" --argjson b "${BYTES:-null}" --argjson f "${FILES:-null}" --argjson d "$DUR" \
+      '{workloadId:$w,status:$s,snapshotId:(if $snap=="" then null else $snap end),bytes:$b,files:$f,durationS:$d,error:(if $e=="" then null else $e end)}')" >/dev/null || true
+[ "$STATUS" = completed ]

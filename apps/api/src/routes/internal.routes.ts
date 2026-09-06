@@ -6,6 +6,9 @@ import { applyInventoryReport } from '../services/provider.service.js';
 import { applyBackupResult } from '../services/backup.service.js';
 import { ingestAccessSession } from '../services/access.service.js';
 import { sealedCredentialsFor } from '../services/run.service.js';
+import { planReportSchema, registerWorkloadSchema } from '@veritut/validators';
+import { approvalState, completeDestroy, failWorkload, handoffWorkload, registerWorkload, reportPlan, sealedWorkloadSecrets } from '../services/provisioning.service.js';
+import { getBlueprint } from '../services/blueprint.service.js';
 import { internalAuth } from '../middleware/internalAuth.js';
 import { validate } from '../middleware/validate.js';
 import { finishRun, reportStep } from '../services/run.service.js';
@@ -72,6 +75,56 @@ internalRouter.get('/probe-targets', async (_req, res, next) => {
 });
 internalRouter.post('/probe-results-v2', validate(probeResultsV2Schema), async (req, res, next) => {
   try { res.json(await applyProbeResultsV2(req.body.results)); } catch (e) { next(e); }
+});
+
+/** K2 provizyon boru hattı — runner uçları. */
+internalRouter.get('/runs/:id/state', async (req, res, next) => {
+  try {
+    const { getRun } = await import('../services/run.service.js');
+    const { run, steps } = await getRun(runId.parse(req.params['id']));
+    res.json({ status: run.status, steps: steps.map((s) => ({ step: s.step, status: s.status })) });
+  } catch (e) { next(e); }
+});
+internalRouter.get('/workloads/:id', async (req, res, next) => {
+  try {
+    const { getWorkloadOps } = await import('../services/workload.service.js');
+    const w = await getWorkloadOps(runId.parse(req.params['id']));
+    res.json({ id: w.id, slug: w.slug, tenantId: w.tenantId, inputs: w.inputs, outputs: w.outputs, residency: w.residency, region: w.region, size: w.size, status: w.status });
+  } catch (e) { next(e); }
+});
+internalRouter.post('/workloads/:id/failed', validate(z.object({ runId: z.string().uuid(), error: z.string().max(1000) })), async (req, res, next) => {
+  try { res.json(await failWorkload(runId.parse(req.params['id']), req.body.runId, req.body.error)); } catch (e) { next(e); }
+});
+internalRouter.post('/runs/:id/plan', validate(planReportSchema), async (req, res, next) => {
+  try { res.json(await reportPlan(runId.parse(req.params['id']), req.body)); } catch (e) { next(e); }
+});
+internalRouter.get('/runs/:id/approval', async (req, res, next) => {
+  try { res.json({ state: await approvalState(runId.parse(req.params['id'])) }); } catch (e) { next(e); }
+});
+internalRouter.get('/runs/:id/workload-secrets', async (req, res, next) => {
+  try {
+    const { runs } = await import('../db/schema/index.js');
+    const { db } = await import('../db/db.js');
+    const { eq } = await import('drizzle-orm');
+    const [r] = await db.select({ w: runs.workloadId }).from(runs).where(eq(runs.id, runId.parse(req.params['id']))).limit(1);
+    res.json(r?.w ? await sealedWorkloadSecrets(r.w) : {});
+  } catch (e) { next(e); }
+});
+internalRouter.post('/workloads/:id/register', validate(registerWorkloadSchema), async (req, res, next) => {
+  try { res.json(await registerWorkload(runId.parse(req.params['id']), req.body)); } catch (e) { next(e); }
+});
+internalRouter.post(
+  '/workloads/:id/handoff',
+  validate(z.object({ runId: z.string().uuid(), verifyOk: z.boolean(), checks: z.array(z.object({ name: z.string(), ok: z.boolean(), detail: z.string().optional() })).default([]) })),
+  async (req, res, next) => {
+    try { res.json(await handoffWorkload(runId.parse(req.params['id']), req.body.runId, req.body.verifyOk, req.body.checks)); } catch (e) { next(e); }
+  },
+);
+internalRouter.post('/workloads/:id/destroyed', validate(z.object({ runId: z.string().uuid() })), async (req, res, next) => {
+  try { res.json(await completeDestroy(runId.parse(req.params['id']), req.body.runId)); } catch (e) { next(e); }
+});
+internalRouter.get('/blueprints/:slug/:version', async (req, res, next) => {
+  try { res.json(await getBlueprint(String(req.params['slug']), String(req.params['version']))); } catch (e) { next(e); }
 });
 
 /** Runner/worker kanıt yazar (ör. backup.completed) — tür kapalı sözlükten. */

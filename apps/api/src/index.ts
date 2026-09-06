@@ -7,6 +7,7 @@ import { redis, queueConnection, subscriber } from './redis.js';
 import { closeQueues } from './queues.js';
 import { initWebSocket } from './ws/server.js';
 import { startScheduler } from './cron/scheduler.js';
+import { loadBlueprints } from './services/blueprint.service.js';
 
 const app = createApp();
 const server = http.createServer(app);
@@ -15,6 +16,7 @@ initWebSocket(server);
 server.listen(env.API_PORT, '0.0.0.0', () => {
   logger.info(`API hazır → http://0.0.0.0:${env.API_PORT} (${env.NODE_ENV})`);
   startScheduler();
+  void loadBlueprints();
 });
 
 async function shutdown(signal: string): Promise<void> {

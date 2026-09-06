@@ -8,6 +8,7 @@
     { href: '/', label: 'Genel bakış' },
     { href: '/kiracilar', label: 'Kiracılar' },
     { href: '/is-yukleri', label: 'İş yükleri' },
+    { href: '/provizyon', label: 'Provizyon' },
     { href: '/envanter', label: 'Envanter' },
     { href: '/tedarikciler', label: 'Tedarikçiler' },
     { href: '/yedekler', label: 'Yedekler' },

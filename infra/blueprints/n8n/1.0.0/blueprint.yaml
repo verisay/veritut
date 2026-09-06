@@ -1,0 +1,32 @@
+slug: n8n
+version: 1.0.0
+layer: 3
+title_tr: Yönetilen n8n
+summary_tr: Yönetilen n8n otomasyon — Caddy TLS, Keycloak SSO, gece yedeği.
+product_slug: n8n
+residencies: [EU, US]
+providers: [hetzner]
+regions:
+  hetzner: [fsn1, nbg1, hel1, ash, hil]
+sizes:
+  - { code: S, title_tr: "S — 2 vCPU / 4 GB", vars: { server_type: cx22, volume_gb: 20 }, price_hint_eur: 6 }
+  - { code: M, title_tr: "M — 4 vCPU / 8 GB", vars: { server_type: cx32, volume_gb: 50 }, price_hint_eur: 15 }
+sla_tiers: [std_9x5, crit_24x7]
+inputs:
+  properties:
+    hostname: { type: string, title_tr: Alt alan adı, format: slug, minLength: 3, maxLength: 40, help_tr: "ör. n8n → n8n.sirketiniz.com" }
+    domain: { type: string, title_tr: Alan adı, format: hostname }
+    admin_email: { type: string, title_tr: Yönetici e-postası, format: email }
+    ssh_public_key: { type: string, title_tr: Müşteri SSH açık anahtarı, minLength: 60, ops_only: true }
+    admin_password: { type: string, title_tr: Yerel yönetici parolası, minLength: 14, secret: true, help_tr: "SSO dışı acil giriş için; yalnız mühürlü saklanır." }
+  required: [hostname, domain, admin_email, ssh_public_key, admin_password]
+backup_policy: { schedule: "0 2 * * *", retention: "--keep-daily 7 --keep-weekly 4 --keep-monthly 6", paths: [/opt/veritut/apps/n8n, /var/backups/veritut] }
+ports: [22, 80, 443, 9100]
+checks:
+  - { name: https, kind: http, target: "{{ outputs.url }}/", expect: 200, timeout_s: 30 }
+  - { name: ssh, kind: tcp, target: "{{ outputs.ipv4 }}:22", timeout_s: 20 }
+  - { name: node-exporter, kind: http, target: "http://{{ outputs.ipv4 }}:9100/metrics", expect: 200, timeout_s: 15 }
+sso: { oidc: true, redirect_path: /rest/sso/oidc/callback }
+metrics: [node]
+playbook: site.yml
+apply_timeout_min: 30

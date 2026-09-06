@@ -1,0 +1,57 @@
+# Gece Hetzner entegrasyon testi (plan §15): managed-vps gerçek kurulum → checks → destroy; bütçe korumalı, artık = fail.
+# Gerekli secret'lar: HCLOUD_TOKEN (yalnız test projesi!), HETZNER_TEST_SSH_PUBLIC_KEY. Opsiyonel: CLOUDFLARE_API_TOKEN.
+name: Nightly Hetzner
+on:
+  schedule: [{ cron: '30 1 * * *' }]
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: opentofu/setup-opentofu@v1
+        with: { tofu_version: 1.8.5 }
+      - name: tofu validate (tüm blueprint'ler)
+        run: |
+          for d in infra/blueprints/*/*/tofu; do
+            echo "== $d"; (cd "$d" && tofu init -backend=false -input=false >/dev/null && tofu validate) || exit 1
+          done
+      - name: ansible-lint (syntax)
+        run: |
+          pipx install ansible==10.*
+          for p in infra/blueprints/*/*/ansible/site.yml; do ANSIBLE_ROLES_PATH=infra/blueprints/_roles ansible-playbook --syntax-check -i localhost, "$p" || exit 1; done
+  integration:
+    needs: validate
+    runs-on: ubuntu-latest
+    if: ${{ secrets.HCLOUD_TOKEN != '' }}
+    env:
+      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+      HCLOUD_BUDGET_EUR: '20'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: opentofu/setup-opentofu@v1
+        with: { tofu_version: 1.8.5 }
+      - name: Bütçe kontrolü (önceki artıklar)
+        run: node tools/hetzner-budget-guard.mjs check
+      - name: managed-vps apply (test etiketi) → checks → destroy
+        working-directory: infra/blueprints/managed-vps/1.0.0/tofu
+        run: |
+          ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519 -q
+          cat > ci.auto.tfvars.json <<EOF2
+          {"workload_id":"ci-${GITHUB_RUN_ID}","workload_slug":"ci-${GITHUB_RUN_ID}","tenant_slug":"veritut-ci","hostname":"ci-${GITHUB_RUN_ID}","domain":"ci.veritut.invalid","admin_email":"ci@veritut.com","ssh_public_key":"${{ secrets.HETZNER_TEST_SSH_PUBLIC_KEY }}","region":"fsn1","size":"S","residency":"EU","server_type":"cx22","volume_gb":0}
+          EOF2
+          # backend "pg" yerine yerel state (CI): main.tf'in backend bloğunu geçici override et
+          printf 'terraform { backend "local" {} }\n' > backend_override.tf
+          sed -i 's/managed_by = "veritut" }/managed_by = "veritut", veritut_test = "1" }/' main.tf
+          tofu init -input=false && tofu apply -auto-approve -input=false
+          IP=$(tofu output -raw ipv4); for i in $(seq 1 30); do nc -z -w5 "$IP" 22 && break || sleep 10; done
+          nc -z -w5 "$IP" 22
+      - name: destroy
+        if: always()
+        working-directory: infra/blueprints/managed-vps/1.0.0/tofu
+        run: tofu destroy -auto-approve -input=false || true
+      - name: Artık taraması + temizlik
+        if: always()
+        run: node tools/hetzner-budget-guard.mjs sweep

@@ -1,0 +1,32 @@
+slug: nextcloud
+version: 1.0.0
+layer: 3
+title_tr: Yönetilen Nextcloud
+summary_tr: Yönetilen Nextcloud — PostgreSQL + Redis, Caddy TLS, Keycloak SSO, gece yedeği.
+product_slug: nextcloud
+residencies: [EU, US]
+providers: [hetzner]
+regions:
+  hetzner: [fsn1, nbg1, hel1, ash, hil]
+sizes:
+  - { code: M, title_tr: "M — 4 vCPU / 8 GB / 100 GB veri", vars: { server_type: cx32, volume_gb: 100 }, price_hint_eur: 16 }
+  - { code: L, title_tr: "L — 8 vCPU / 16 GB / 250 GB veri", vars: { server_type: cx42, volume_gb: 250 }, price_hint_eur: 34 }
+sla_tiers: [std_9x5, crit_24x7]
+inputs:
+  properties:
+    hostname: { type: string, title_tr: Alt alan adı, format: slug, minLength: 3, maxLength: 40, help_tr: "ör. nextcloud → nextcloud.sirketiniz.com" }
+    domain: { type: string, title_tr: Alan adı, format: hostname }
+    admin_email: { type: string, title_tr: Yönetici e-postası, format: email }
+    ssh_public_key: { type: string, title_tr: Müşteri SSH açık anahtarı, minLength: 60, ops_only: true }
+    admin_password: { type: string, title_tr: Yerel yönetici parolası, minLength: 14, secret: true, help_tr: "SSO dışı acil giriş için; yalnız mühürlü saklanır." }
+  required: [hostname, domain, admin_email, ssh_public_key, admin_password]
+backup_policy: { schedule: "0 2 * * *", retention: "--keep-daily 7 --keep-weekly 4 --keep-monthly 6", paths: [/opt/veritut/apps/nextcloud, /var/backups/veritut] }
+ports: [22, 80, 443, 9100]
+checks:
+  - { name: https, kind: http, target: "{{ outputs.url }}/", expect: 200, timeout_s: 30 }
+  - { name: ssh, kind: tcp, target: "{{ outputs.ipv4 }}:22", timeout_s: 20 }
+  - { name: node-exporter, kind: http, target: "http://{{ outputs.ipv4 }}:9100/metrics", expect: 200, timeout_s: 15 }
+sso: { oidc: true, redirect_path: /apps/user_oidc/code }
+metrics: [node]
+playbook: site.yml
+apply_timeout_min: 30

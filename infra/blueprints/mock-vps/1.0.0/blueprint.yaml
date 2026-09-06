@@ -1,0 +1,31 @@
+slug: mock-vps
+version: 1.0.0
+layer: 2
+title_tr: Mock sunucu (dev/test)
+summary_tr: Gerçek bulut kaynağı yaratmaz; provizyon boru hattını (plan → onay → apply → ansible → checks) uçtan uca kanıtlar.
+product_slug: managed-vps
+residencies: [TR, EU, US]
+providers: [mock]
+regions:
+  mock: [tr-ist, eu-fra]
+sizes:
+  - { code: S, title_tr: Küçük (2 vCPU / 4 GB), vars: { server_type: cx22, volume_gb: 20 }, price_hint_eur: 9.9 }
+  - { code: M, title_tr: Orta (4 vCPU / 8 GB), vars: { server_type: cx32, volume_gb: 50 }, price_hint_eur: 19.9 }
+  - { code: L, title_tr: Büyük (8 vCPU / 16 GB), vars: { server_type: cx42, volume_gb: 100 }, price_hint_eur: 39.9 }
+sla_tiers: [std_9x5, crit_24x7]
+inputs:
+  properties:
+    hostname: { type: string, title_tr: Sunucu adı, format: slug, minLength: 3, maxLength: 40, help_tr: Küçük harf ve tire. }
+    admin_email: { type: string, title_tr: Yönetici e-postası, format: email }
+    root_password: { type: string, title_tr: Root parolası, minLength: 12, secret: true, help_tr: Yalnız runner'da açılır, kanıt ve loglarda maskelenir. }
+    monitoring: { type: boolean, title_tr: node_exporter kur, default: true }
+  required: [hostname, admin_email, root_password]
+backup_policy: { schedule: "0 2 * * *", retention: "--keep-daily 7 --keep-weekly 4 --keep-monthly 6", paths: [] }
+ports: [22, 9100]
+checks:
+  - { name: api-health, kind: http, target: "{{ outputs.probe_url }}", expect: 200, timeout_s: 10 }
+  - { name: marker-file, kind: script, target: marker.mjs, timeout_s: 10 }
+sso: { oidc: false }
+metrics: [node]
+playbook: site.yml
+apply_timeout_min: 5

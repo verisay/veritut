@@ -63,6 +63,13 @@ Kapsam dışı kaynak **404**. Haritasız segment **403** (fail-closed).
 | `GET /ops/margin?period=` · `POST /ops/cost/invoice-csv` (senior) · `PUT /ops/fx` (senior) | operator | marj raporu |
 | `GET/POST /ops/backup-repos` (POST senior) · `GET /ops/backup-jobs` | operator | depolar / işler |
 | `GET /ops/notifications` · `POST /:id/read` | operator | bildirimler |
+| `GET /ops/blueprints` · `POST /ops/blueprints/reload` (platform_admin) | operator | katalog (manifestler, sır değeri yok) |
+| `POST /ops/workloads/provision` | operator | `provisionRequestSchema` + blueprint inputs (422 alan hataları / POLICY_VIOLATION) → 201 `{workload, run}` |
+| `POST /ops/workloads/:id/resize {size}` | operator | 409 aktif değilse; run medium/high (plan diff) |
+| `POST /ops/workloads/:id/destroy` | senior | 422 BACKUP_REQUIRED yedek kanıtı yoksa; run high |
+| `POST /ops/runs/:id/approve` | senior, ≠ talep eden (403) | `awaiting_approval → running` |
+| `POST /ops/runs/:id/reject {reason}` | senior | `→ cancelled`; iş yükü eski hâline |
+| `GET /ops/changes` | operator | değişiklik kaydı |
 | `GET /ops/evidence/platform` | operator | platform zinciri + verdict |
 | `POST /ops/evidence/demo` | operator, **yalnız development** | demo kanıt olayı |
 
@@ -78,13 +85,16 @@ Kapsam dışı kaynak **404**. Haritasız segment **403** (fail-closed).
 | `POST /internal/provider-accounts/:id/inventory` | runner | envanter raporu → upsert + gone + tahmini maliyet |
 | `POST /internal/backup-result` | runner | backup_jobs + kanıt; 2 ardışık hata → bildirim |
 | `POST /internal/access-session` | bastion/teleport | erişim oturumu → kanıt + kiracı bildirimi |
+| `GET /internal/runs/:id/state` · `GET /internal/runs/:id/workload-secrets` · `GET /internal/blueprints/:slug/:version` | runner | devam için adımlar; mühürlü girdiler; manifest |
+| `POST /internal/runs/:id/plan` → `{status, risk}` · `GET /internal/runs/:id/approval` → `{state}` | runner | plan raporu → risk → onay yoklaması |
+| `GET /internal/workloads/:id` · `POST /:id/register` · `POST /:id/handoff` · `POST /:id/destroyed` · `POST /:id/failed` | runner | boru hattı kayıt/teslim |
 | `GET /internal/probe-targets` · `POST /internal/probe-results-v2` | worker | platform + kiracı bileşenleri; kiracı snapshot `status:tenant:<slug>` |
 
 ## WS
 `GET /api/v1/ws/runs/:id` (upgrade, `vt_ops` çerezi) → geçmiş `{type:'log', t, line, level}` + canlı yayın + `{type:'finished', status}`.
 
 ## Redis anahtarları
-`oidc:state:<state>` (10 dk) · `run:<id>:log` (stream, ~10k) · `run:<id>` (pub/sub) · `status:platform` · `status:tenant:<slug>` (K1)
+`oidc:state:<state>` (10 dk) · `run:<id>:log` (stream, ~10k) · `run:<id>` (pub/sub) · `status:platform` · `status:tenant:<slug>` · `lock:workload:<id>` (runner, 1 sa, değer = runId)
 
 ## Kuyruklar (BullMQ)
-runner: `provision` · `provider-sync` · `drill` — worker: `probe` (30 sn tekrarlı) · `notify` · `report` · `rollup`. `jobId=run-<uuid>` idempotens (BullMQ özel id'de `:` yasak).
+runner: `provision` (kinds: echo · backup · provision · resize · destroy · upgrade · drift-plan) · `provider-sync` · `drill` — worker: `probe` (30 sn tekrarlı) · `notify` · `report` · `rollup`. `jobId=run-<uuid>` idempotens (BullMQ özel id'de `:` yasak).

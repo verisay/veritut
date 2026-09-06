@@ -1,0 +1,32 @@
+slug: managed-vps
+version: 1.0.0
+layer: 2
+title_tr: Yönetilen sunucu
+summary_tr: Hetzner Cloud üzerinde sertleştirilmiş Docker host — yama, ufw/fail2ban, node_exporter, restic 3-2-1 yedek, DNS.
+product_slug: managed-vps
+residencies: [EU, US]
+providers: [hetzner]
+regions:
+  hetzner: [fsn1, nbg1, hel1, ash, hil]
+sizes:
+  - { code: S, title_tr: "S — 2 vCPU / 4 GB / 40 GB", vars: { server_type: cx22, volume_gb: 0 }, price_hint_eur: 4.5 }
+  - { code: M, title_tr: "M — 4 vCPU / 8 GB / 80 GB + 100 GB volume", vars: { server_type: cx32, volume_gb: 100 }, price_hint_eur: 13.1 }
+  - { code: L, title_tr: "L — 8 vCPU / 16 GB / 160 GB + 250 GB volume", vars: { server_type: cx42, volume_gb: 250 }, price_hint_eur: 31.4 }
+sla_tiers: [std_9x5, crit_24x7]
+inputs:
+  properties:
+    hostname: { type: string, title_tr: Sunucu adı, format: slug, minLength: 3, maxLength: 40 }
+    domain: { type: string, title_tr: Alan adı, format: hostname, help_tr: "Cloudflare'de yönetilen bölge; A kaydı otomatik açılır." }
+    admin_email: { type: string, title_tr: Yönetici e-postası, format: email }
+    ssh_public_key: { type: string, title_tr: Müşteri SSH açık anahtarı, minLength: 60, help_tr: "ssh-ed25519 … — parola ile giriş kapalıdır." }
+    extra_ports: { type: string, title_tr: Ek TCP portları, default: "", pattern: "^(\\d{2,5}(,\\d{2,5})*)?$", help_tr: "Virgülle: 8080,9000" }
+  required: [hostname, domain, admin_email, ssh_public_key]
+backup_policy: { schedule: "0 2 * * *", retention: "--keep-daily 7 --keep-weekly 4 --keep-monthly 6", paths: [/opt/veritut/apps] }
+ports: [22, 80, 443, 9100]
+checks:
+  - { name: ssh, kind: tcp, target: "{{ outputs.ipv4 }}:22", timeout_s: 20 }
+  - { name: node-exporter, kind: http, target: "http://{{ outputs.ipv4 }}:9100/metrics", expect: 200, timeout_s: 15 }
+sso: { oidc: false }
+metrics: [node]
+playbook: site.yml
+apply_timeout_min: 20

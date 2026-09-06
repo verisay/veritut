@@ -33,4 +33,8 @@ jobs:
       - run: pnpm test
       - run: pnpm audit --prod --audit-level=high
       - run: pnpm db:migrate
+      - uses: opentofu/setup-opentofu@v1
+        with: { tofu_version: 1.8.5 }
+      - name: blueprint tofu validate
+        run: for d in infra/blueprints/*/*/tofu; do (cd "$d" && tofu init -backend=false -input=false >/dev/null && tofu validate) || exit 1; done
       # K1+: API'yi Keycloak servisiyle kaldırıp smoke paketleri (kiracı izolasyon + fail-closed) buraya eklenir.

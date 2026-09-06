@@ -1,0 +1,56 @@
+# Keycloak'ta uygulama için OIDC istemcisi (D6: müşteri VERITUT hesabıyla girer). Runner'dan (localhost) çalışır.
+- name: admin token
+  uri:
+    url: "{{ lookup('env', 'VT_KC_URL') }}/realms/master/protocol/openid-connect/token"
+    method: POST
+    body_format: form-urlencoded
+    body: { grant_type: password, client_id: admin-cli, username: "{{ lookup('env', 'VT_KC_ADMIN_USER') }}", password: "{{ lookup('env', 'VT_KC_ADMIN_PASS') }}" }
+  register: kc_tok
+  no_log: true
+  delegate_to: localhost
+- name: istemci var mı
+  uri:
+    url: "{{ lookup('env', 'VT_KC_URL') }}/admin/realms/{{ kc_realm }}/clients?clientId={{ kc_client_id }}"
+    headers: { Authorization: "Bearer {{ kc_tok.json.access_token }}" }
+  register: kc_existing
+  delegate_to: localhost
+- name: istemci oluştur
+  when: kc_existing.json | length == 0
+  uri:
+    url: "{{ lookup('env', 'VT_KC_URL') }}/admin/realms/{{ kc_realm }}/clients"
+    method: POST
+    status_code: 201
+    headers: { Authorization: "Bearer {{ kc_tok.json.access_token }}" }
+    body_format: json
+    body:
+      clientId: "{{ kc_client_id }}"
+      name: "{{ kc_client_name }}"
+      enabled: true
+      protocol: openid-connect
+      publicClient: false
+      standardFlowEnabled: true
+      directAccessGrantsEnabled: false
+      rootUrl: "{{ kc_root_url }}"
+      redirectUris: "{{ kc_redirect_uris }}"
+      webOrigins: ["{{ kc_root_url }}"]
+      attributes: { "pkce.code.challenge.method": S256 }
+  delegate_to: localhost
+- name: istemci sırrı
+  uri:
+    url: "{{ lookup('env', 'VT_KC_URL') }}/admin/realms/{{ kc_realm }}/clients?clientId={{ kc_client_id }}"
+    headers: { Authorization: "Bearer {{ kc_tok.json.access_token }}" }
+  register: kc_client
+  delegate_to: localhost
+- name: sır oku
+  uri:
+    url: "{{ lookup('env', 'VT_KC_URL') }}/admin/realms/{{ kc_realm }}/clients/{{ kc_client.json[0].id }}/client-secret"
+    headers: { Authorization: "Bearer {{ kc_tok.json.access_token }}" }
+  register: kc_secret
+  no_log: true
+  delegate_to: localhost
+- name: OIDC değişkenleri
+  set_fact:
+    oidc_client_id: "{{ kc_client_id }}"
+    oidc_client_secret: "{{ kc_secret.json.value }}"
+    oidc_issuer: "{{ lookup('env', 'VT_KC_PUBLIC_URL') | default(lookup('env', 'VT_KC_URL'), true) }}/realms/{{ kc_realm }}"
+  no_log: true

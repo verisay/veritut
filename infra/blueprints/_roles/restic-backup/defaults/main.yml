@@ -1,0 +1,6 @@
+restic_backup_paths: [/opt/veritut/apps]
+restic_backup_schedule: "0 2 * * *"
+restic_backup_retention: "--keep-daily 7 --keep-weekly 4 --keep-monthly 6"
+restic_backup_pre_cmd: ""          # örn. docker exec … pg_dump
+restic_report_url: ""              # VERITUT iç uç (bastion/WireGuard üzerinden)
+restic_report_token: ""

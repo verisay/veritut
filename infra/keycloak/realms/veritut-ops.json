@@ -72,6 +72,16 @@
       "emailVerified": true,
       "realmRoles": ["platform_admin"],
       "credentials": [{ "type": "password", "value": "ops-dev-parola", "temporary": false }]
+    },
+    {
+      "username": "senior@veritut.local",
+      "email": "senior@veritut.local",
+      "firstName": "Kıdemli",
+      "lastName": "Operatör",
+      "enabled": true,
+      "emailVerified": true,
+      "realmRoles": ["senior"],
+      "credentials": [{ "type": "password", "value": "senior-dev-parola", "temporary": false }]
     }
   ]
 }

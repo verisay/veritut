@@ -5,7 +5,7 @@
  * Ortam: PORTAL_URL, OPS_URL, STATUS_URL, KC_PUBLIC_URL (infra/.env) — yoksa dev varsayılanları.
  * Kimlikler: realm import'undaki dev kullanıcıları (musteri@veritut.local / ops@veritut.local).
  */
-import { API, OPS, PORTAL, STATUS, https, randomBytes, ok, jar, go, follow, oidcLogin, done } from './_smoke-common.mjs';
+import { API, OPS, PORTAL, STATUS, https, randomBytes, ok, jar, go, oidcLogin, done } from './_smoke-common.mjs';
 console.log('K0 smoke — VERITUT');
 
 // 1. Sağlık + fail-closed + public verify

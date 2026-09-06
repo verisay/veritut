@@ -46,3 +46,14 @@ test('SLA saati: 24x7 düz toplar; tatil iş anı değildir', () => {
   assert.equal(isBusinessMoment(from, holidays), false);
   assert.equal(addSlaMinutes(from, 30, '24x7', holidays).toISOString(), '2026-10-29T08:30:00.000Z');
 });
+
+import { riskFor, requiresApproval } from './risk.js';
+test('risk: destroy her zaman high; provision yalnız yaratım low; plan silme içeriyorsa high', () => {
+  assert.equal(riskFor('destroy', null), 'high');
+  assert.equal(riskFor('provision', { add: 5, change: 0, destroy: 0, replace: 0, resources: [] }), 'low');
+  assert.equal(riskFor('provision', { add: 1, change: 0, destroy: 1, replace: 0, resources: [] }), 'high');
+  assert.equal(riskFor('resize', { add: 0, change: 1, destroy: 0, replace: 0, resources: [] }), 'medium');
+  assert.equal(riskFor('resize', { add: 0, change: 0, destroy: 0, replace: 1, resources: [] }), 'high');
+  assert.equal(requiresApproval('high'), true);
+  assert.equal(requiresApproval('medium'), false);
+});

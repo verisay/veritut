@@ -1,0 +1,21 @@
+# Hedef sunucuda restic cron'u; kimlik bilgileri /etc/veritut/restic.env (0600) — runner env'inden (mühürden) gelir.
+- name: /etc/veritut
+  file: { path: /etc/veritut, state: directory, mode: "0700" }
+- name: restic env
+  copy:
+    dest: /etc/veritut/restic.env
+    mode: "0600"
+    content: |
+      RESTIC_REPOSITORY={{ lookup('env', 'VT_RESTIC_REPOSITORY') }}
+      RESTIC_PASSWORD={{ lookup('env', 'VT_RESTIC_PASSWORD') }}
+      AWS_ACCESS_KEY_ID={{ lookup('env', 'VT_AWS_ACCESS_KEY_ID') }}
+      AWS_SECRET_ACCESS_KEY={{ lookup('env', 'VT_AWS_SECRET_ACCESS_KEY') }}
+  no_log: true
+- name: yedek script'i
+  template: { src: veritut-backup.sh.j2, dest: /opt/veritut/backup.sh, mode: "0750" }
+- name: cron
+  cron:
+    name: veritut-backup
+    minute: "{{ restic_backup_schedule.split(' ')[0] }}"
+    hour: "{{ restic_backup_schedule.split(' ')[1] }}"
+    job: "/opt/veritut/backup.sh >> /var/log/veritut-backup.log 2>&1"

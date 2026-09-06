@@ -7,3 +7,4 @@ export * from './evidence.js';
 export * from './components.js';
 export * from './platform.js';
 export * from './k1.js';
+export * from './k2.js';
