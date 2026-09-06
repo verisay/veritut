@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { db, closeDb } from './db.js';
 import { providers, components, tenants } from './schema/index.js';
+import { seedK3 } from './seed-k3.js';
 
 /**
  * İdempotent seed (K0): tedarikçiler, platform bileşenleri (status sayfası), `internal` kiracı.
@@ -41,6 +42,7 @@ async function main(): Promise<void> {
   }
   void components;
   console.log('seed tamam: 6 tedarikçi, iç kiracı, 5 platform bileşeni');
+  await seedK3();
   await closeDb();
 }
 

@@ -11,6 +11,12 @@ import { opsRouter } from './ops.routes.js';
 import { internalRouter } from './internal.routes.js';
 import { workloadsRouter } from './workloads.routes.js';
 import { meRouter } from './me.routes.js';
+import { catalogRouter } from './catalog.routes.js';
+import { ordersRouter } from './orders.routes.js';
+import { billingRouter } from './billing.routes.js';
+import { supportRouter } from './support.routes.js';
+import { apiKeysRouter } from './api-keys.routes.js';
+import { extRouter } from './ext.routes.js';
 
 export const apiRouter: Router = Router();
 
@@ -33,6 +39,12 @@ const mounted: Array<[string, Router]> = [
   ['evidence', evidenceRouter],
   ['ops', opsRouter],
   ['internal', internalRouter],
+  ['catalog', catalogRouter],
+  ['orders', ordersRouter],
+  ['billing', billingRouter],
+  ['support', supportRouter],
+  ['api-keys', apiKeysRouter],
+  ['ext', extRouter],
 ];
 for (const [seg, r] of mounted) apiRouter.use(`/${seg}`, r);
 // `ws` segmenti HTTP router değil, upgrade handler (ws/server.ts); `webhooks` K3'te gelir.

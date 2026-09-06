@@ -8,3 +8,4 @@ export * from './components.js';
 export * from './platform.js';
 export * from './k1.js';
 export * from './k2.js';
+export * from './k3.js';

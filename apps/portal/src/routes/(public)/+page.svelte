@@ -1,12 +1,13 @@
 <script lang="ts">
   import { Card, StatusPill, ResidencyBadge } from '@veritut/ui';
-  const urunler = [
-    { slug: 'nextcloud', ad: 'Yönetilen Nextcloud', ozet: 'Kurumsal dosya paylaşımı; SSO, yedek ve geri dönüş kanıtı dahil.' },
-    { slug: 'n8n', ad: 'Yönetilen n8n', ozet: 'Otomasyon akışları; güncelleme ve yedek bizde, akış sizde.' },
-    { slug: 'zammad', ad: 'Yönetilen Zammad', ozet: 'Destek masası; e-posta ve SSO hazır kurulur.' },
-    { slug: 'sunucu', ad: 'Yönetilen sunucu', ozet: 'Yama, izleme, sertleştirme, 3-2-1 yedek, aylık tatbikat.' },
-  ];
+  let { data } = $props();
 </script>
+
+<svelte:head>
+  <title>VERITUT — sunucu değil, sorumluluğun devri</title>
+  <meta name="description" content="Yönetilen çoklu-bulut operatörü. Kurulum, yama, yedek ve nöbet bizde; her adım kanıt defterinize düşer. Verinizin duracağı ülkeyi siz seçersiniz." />
+  <link rel="canonical" href="https://veritut.com/" />
+</svelte:head>
 
 <section class="vt-hero" style="padding:64px 40px; display:grid; gap:18px; max-width:100%">
   <p class="vt-kicker" style="color:rgba(255,255,255,.7)">Yönetilen bulut operatörü · veri emanetçisi</p>
@@ -16,7 +17,7 @@
     Yedeklediğimizi söylemiyoruz; geri döndüğünü kanıtlıyoruz.
   </p>
   <div style="display:flex; gap:10px; flex-wrap:wrap">
-    <a href="/panel" class="vt-btn vt-btn-lg" style="background:#fff; color:#13223a">Portala gir</a>
+    <a href="/urunler" class="vt-btn vt-btn-lg" style="background:#fff; color:#13223a">Ürünlere bak</a>
     <a href="/guvence" class="vt-btn vt-btn-lg" style="border-color:rgba(255,255,255,.4); color:#fff">Kanıt zincirini gör</a>
   </div>
 </section>
@@ -28,17 +29,19 @@
 </section>
 
 <section style="margin-top:56px">
-  <h2 class="vt-h2">Ürünler</h2>
-  <p class="vt-lead" style="margin:4px 0 20px">Yazılım lisansı ücretsiz; sunucu, kurulum, güncelleme, yedek ve destek bizde.</p>
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px">
-    {#each urunler as u (u.slug)}
-      <Card title={u.ad}>
-        <p class="vt-help" style="margin:0 0 14px">{u.ozet}</p>
-        <div style="display:flex; gap:6px; align-items:center">
-          <ResidencyBadge residency="TR" small /><ResidencyBadge residency="EU" small />
-          <span class="vt-help">verinizin duracağı yeri siz seçersiniz</span>
-        </div>
-      </Card>
+  <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap">
+    <div><h2 class="vt-h2">Ürünler</h2><p class="vt-lead" style="margin:4px 0 0">Yazılım lisansı ücretsiz; sunucu, kurulum, güncelleme, yedek ve destek bizde.</p></div>
+    <a href="/urunler" style="font-size:13.5px; font-weight:700">Tümü →</a>
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; margin-top:20px">
+    {#each data.products as u (u.slug)}
+      <a href="/urunler/{u.slug}" class="vt-card vt-card-pad" style="color:inherit; display:block">
+        <p class="vt-h3" style="margin:0 0 6px">{u.title}</p>
+        <p class="vt-help" style="margin:0 0 14px">{u.summary}</p>
+        <div style="display:flex; gap:6px; align-items:center"><ResidencyBadge residency="TR" small /><ResidencyBadge residency="EU" small /><span class="vt-help">ikametgâhı siz seçersiniz</span></div>
+      </a>
+    {:else}
+      <p class="muted">Katalog şu an yüklenemedi.</p>
     {/each}
   </div>
 </section>
@@ -51,7 +54,10 @@
       <div style="display:flex; justify-content:space-between; align-items:center"><span>Aylık kanıt çapası</span><span class="vt-help">kamuya açık</span></div>
     </div>
   </Card>
-  <Card title="SLA katmanları ayrı fiyatlanır">
-    <p class="vt-help" style="margin:0">9x5 standart · 7x24 kritik · özel yanıt süresi. Herkese 7x24 sözü vermiyoruz; verdiğimiz sözü saatle ölçüyoruz.</p>
+  <Card title="Planlar">
+    <div style="display:grid; gap:8px">
+      {#each data.plans as p (p.code)}<div style="display:flex; justify-content:space-between; gap:12px"><span style="font-weight:700">{p.title}</span><span class="vt-help">{p.summary}</span></div>{/each}
+    </div>
+    <a href="/fiyatlandirma" class="vt-btn vt-btn-secondary vt-btn-sm" style="margin-top:14px">Fiyatlandırma</a>
   </Card>
 </section>

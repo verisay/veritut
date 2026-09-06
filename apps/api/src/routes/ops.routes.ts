@@ -24,6 +24,12 @@ import { listStaffNotifications, markRead } from '../services/notification.servi
 import { provisionRequestSchema } from '@veritut/validators';
 import { listBlueprints, loadBlueprints } from '../services/blueprint.service.js';
 import { approveRun, listChanges, rejectRun, requestDestroy, requestProvision, requestResize } from '../services/provisioning.service.js';
+import { featureOverrideSchema, publishVersionSchema, upsertPlanSchema, upsertPriceSchema, upsertProductSchema, upsertSlaSchema } from '@veritut/validators';
+import { listPlans, listPrices, listProducts, listSlaTiers, listVersions, publishProductVersion, upsertPlan, upsertPrice, upsertProduct, upsertSlaTier } from '../services/catalog.service.js';
+import { clearOverride, getFeatures, effectivePlanCode, setOverride } from '../services/entitlement.service.js';
+import { listAllOrders, rejectOrder } from '../services/order.service.js';
+import { computeKpi, listKpi } from '../services/kpi.service.js';
+import { pushPeriod, expireTrials } from '../services/billing.service.js';
 
 /** Personel uçları — tümü `requireStaff` altında; kiracı bağlamı açık parametre + audit. */
 export const opsRouter: Router = Router();
@@ -144,6 +150,65 @@ opsRouter.post('/runs/:id/reject', requireStaffRole('senior'), validate(z.object
 });
 opsRouter.get('/changes', async (_req, res, next) => {
   try { res.json(await listChanges()); } catch (e) { next(e); }
+});
+
+// ── Katalog yönetimi (K3) ─────────────────────────────────────────────────
+opsRouter.get('/catalog', async (_req, res, next) => {
+  try {
+    const [products, plans, slas, prices] = await Promise.all([listProducts(), listPlans(false), listSlaTiers(false), listPrices()]);
+    const withVersions = await Promise.all(products.map(async (p) => ({ ...p, versions: await listVersions(p.slug) })));
+    res.json({ products: withVersions, plans, slaTiers: slas, prices: prices.map((x) => ({ ...x, monthly: Number(x.monthly), setupFee: Number(x.setupFee) })) });
+  } catch (e) { next(e); }
+});
+opsRouter.put('/catalog/products', requireStaffRole('platform_admin'), validate(upsertProductSchema), async (req, res, next) => {
+  try { res.json(await upsertProduct(req.body, req.staff!.id)); } catch (e) { next(e); }
+});
+opsRouter.post('/catalog/products/:slug/publish', requireStaffRole('platform_admin'), validate(publishVersionSchema), async (req, res, next) => {
+  try { res.status(201).json(await publishProductVersion(String(req.params['slug']), req.body.blueprintVersion, req.body.notes, req.staff!.id)); } catch (e) { next(e); }
+});
+opsRouter.put('/catalog/plans', requireStaffRole('platform_admin'), validate(upsertPlanSchema), async (req, res, next) => {
+  try { res.json(await upsertPlan(req.body, req.staff!.id)); } catch (e) { next(e); }
+});
+opsRouter.put('/catalog/sla-tiers', requireStaffRole('platform_admin'), validate(upsertSlaSchema), async (req, res, next) => {
+  try { res.json(await upsertSlaTier(req.body, req.staff!.id)); } catch (e) { next(e); }
+});
+opsRouter.put('/catalog/prices', requireStaffRole('platform_admin'), validate(upsertPriceSchema), async (req, res, next) => {
+  try { res.json(await upsertPrice(req.body, req.staff!.id)); } catch (e) { next(e); }
+});
+
+// ── Siparişler + entitlement ──────────────────────────────────────────────
+opsRouter.get('/orders', async (_req, res, next) => {
+  try { res.json(await listAllOrders()); } catch (e) { next(e); }
+});
+opsRouter.post('/orders/:id/reject', requireStaffRole('senior'), validate(z.object({ reason: z.string().min(2).max(500) })), async (req, res, next) => {
+  try { await rejectOrder(uuid.parse(req.params['id']), req.body.reason, req.staff!.id); res.status(204).end(); } catch (e) { next(e); }
+});
+opsRouter.get('/tenants/:id/entitlement', async (req, res, next) => {
+  try {
+    const id = uuid.parse(req.params['id']);
+    const [planCode, features] = await Promise.all([effectivePlanCode(id), getFeatures(id)]);
+    res.json({ planCode, features });
+  } catch (e) { next(e); }
+});
+opsRouter.put('/tenants/:id/entitlement', requireStaffRole('senior'), validate(featureOverrideSchema), async (req, res, next) => {
+  try { await setOverride(uuid.parse(req.params['id']), req.body.feature, req.body.value, req.body.note, req.staff!.id); res.status(204).end(); } catch (e) { next(e); }
+});
+opsRouter.delete('/tenants/:id/entitlement/:feature', requireStaffRole('senior'), async (req, res, next) => {
+  try { await clearOverride(uuid.parse(req.params['id']), String(req.params['feature']), req.staff!.id); res.status(204).end(); } catch (e) { next(e); }
+});
+
+// ── KPI + dönem kapanışı ──────────────────────────────────────────────────
+opsRouter.get('/kpi', async (_req, res, next) => {
+  try { res.json(await listKpi()); } catch (e) { next(e); }
+});
+opsRouter.post('/kpi/compute', async (req, res, next) => {
+  try { res.json(await computeKpi(periodSchema.parse(req.body?.period ?? new Date().toISOString().slice(0, 7)))); } catch (e) { next(e); }
+});
+opsRouter.post('/billing/push', requireStaffRole('senior'), async (req, res, next) => {
+  try { res.json(await pushPeriod(periodSchema.parse(req.body?.period ?? new Date().toISOString().slice(0, 7)))); } catch (e) { next(e); }
+});
+opsRouter.post('/billing/expire-trials', requireStaffRole('senior'), async (_req, res, next) => {
+  try { res.json({ expired: await expireTrials() }); } catch (e) { next(e); }
 });
 
 // ── Maliyet & marj ────────────────────────────────────────────────────────

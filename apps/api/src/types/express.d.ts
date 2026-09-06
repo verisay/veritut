@@ -6,5 +6,8 @@ declare module 'express-serve-static-core' {
     user?: { id: string; email: string; displayName: string; sessionId: string };
     staff?: { id: string; email: string; displayName: string; role: StaffRole; sessionId: string };
     ctx?: { tenantId: string; tenantSlug: string; role: TenantRole };
+    apiKey?: { id: string; scopes: string[] };
+    /** Webhook router'ları için ham gövde (HMAC) — express.json'dan ÖNCE doldurulur. */
+    rawBody?: Buffer;
   }
 }

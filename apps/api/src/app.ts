@@ -8,6 +8,7 @@ import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { apiRouter } from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { webhooksRouter } from './routes/webhooks.routes.js';
 
 export function createApp(): express.Express {
   const app = express();
@@ -18,7 +19,9 @@ export function createApp(): express.Express {
   const allowList = env.CORS_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean);
   app.use(cors({ origin: allowList.length > 0 ? allowList : false, credentials: true }));
 
-  // K3: webhook router'ları (alertmanager/billing/zammad) HMAC raw body için BURAYA, express.json'dan ÖNCE.
+  // Webhook router'ları HMAC ham gövde ister → express.json'dan ÖNCE (D: plan §3.1).
+  app.use('/api/v1/webhooks', webhooksRouter);
+
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());

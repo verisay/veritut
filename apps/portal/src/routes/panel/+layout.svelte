@@ -8,8 +8,13 @@
   $effect(() => setActiveTenant(data.activeTenant?.id ?? null));
   const nav = [
     { href: '/panel', label: 'İş yükleri' },
+    { href: '/panel/siparis', label: 'Yeni iş yükü' },
+    { href: '/panel/siparisler', label: 'Siparişler' },
     { href: '/panel/kanit', label: 'Kanıt Defteri' },
+    { href: '/panel/faturalar', label: 'Faturalar' },
+    { href: '/panel/destek', label: 'Destek' },
     { href: '/panel/ekip', label: 'Ekip' },
+    { href: '/panel/api-anahtarlari', label: 'API anahtarları' },
     { href: '/panel/bildirimler', label: 'Bildirimler' },
   ];
 </script>

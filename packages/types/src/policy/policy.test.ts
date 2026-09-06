@@ -57,3 +57,24 @@ test('risk: destroy her zaman high; provision yalnız yaratım low; plan silme i
   assert.equal(requiresApproval('high'), true);
   assert.equal(requiresApproval('medium'), false);
 });
+
+import { getEffectiveFeatures, hasFeature, allowedSlaTiers } from './entitlement.js';
+import { quotaExceeded, UNLIMITED } from '../catalog.js';
+test('entitlement: istisna planı ezer, bilinmeyen anahtar yok sayılır', () => {
+  const f = getEffectiveFeatures({ 'workloads.max': 3, 'api.enabled': false }, { 'api.enabled': true, uydurma: 1 });
+  assert.deepEqual(f, { 'workloads.max': 3, 'api.enabled': true });
+  assert.equal(hasFeature(f, 'api.enabled'), true);
+  assert.equal(hasFeature(f, 'finops'), false);
+});
+
+test('kota: -1 sınırsız, eşitlik aşım sayılır', () => {
+  assert.equal(quotaExceeded(3, 2), false);
+  assert.equal(quotaExceeded(3, 3), true);
+  assert.equal(quotaExceeded(UNLIMITED, 9999), false);
+  assert.equal(quotaExceeded(undefined, 5), false);
+});
+
+test('SLA katmanları: tanımsızsa yalnız standart', () => {
+  assert.deepEqual(allowedSlaTiers({}), ['std_9x5']);
+  assert.deepEqual(allowedSlaTiers({ 'sla.tiers': ['std_9x5', 'crit_24x7'] }), ['std_9x5', 'crit_24x7']);
+});

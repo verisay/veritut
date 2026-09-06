@@ -47,6 +47,33 @@ Kapsam dışı kaynak **404**. Haritasız segment **403** (fail-closed).
 ## Kiracı ek (`/tenants/current/*`)
 `GET/POST invitations` (admin+) · `PATCH members/:userId {role}` (owner) · `DELETE members/:userId` (owner; son sahip çıkarılamaz)
 
+## Katalog (`/catalog`, KİMLİKSİZ, 240 istek/dk)
+| Uç | Açıklama |
+| --- | --- |
+| `GET /catalog` | Yayımlanmış ürünler + planlar + SLA katmanları |
+| `GET /catalog/products/:slug` | Ürün + boyut/bölge/ikametgâh + girdi şeması (ops-only alanlar hariç) + fiyat matrisi |
+| `GET /catalog/quote?product&size&residency&plan&sla&trial` | Fiyat teklifi (422 `PRICE_NOT_FOUND`) |
+
+## Sipariş (`/orders`, `vt_portal` + `X-Tenant-Id`)
+| Uç | Açıklama |
+| --- | --- |
+| `GET /orders` · `GET /orders/:id` | Kiracının siparişleri (kapsam dışı 404) |
+| `POST /orders/quote` | Teklif |
+| `POST /orders` (admin+, 20/saat fail-closed) | `createOrderSchema` + blueprint girdileri. 422 sözleşme onayı/girdi, 403 `SLA_NOT_IN_PLAN`/`QUOTA_EXCEEDED`, 422 `TRIAL_ALREADY_USED`/`PRODUCT_INACTIVE`. Başarıda sipariş → provizyon → abonelik → fatura |
+
+## Mali (`/billing`, `vt_portal` + `X-Tenant-Id`)
+`GET invoices` (mali+) · `GET subscriptions` · `GET usage?period` (mali+) · `GET plan` (etkin plan + özellikler) · `POST mock-pay` (yalnız development + mock omurga)
+
+## Destek (`/support`) · API anahtarları (`/api-keys`, admin+)
+`GET/POST support` · `GET support/:id` · `POST support/:id/reply` (30/saat) — `GET/POST/DELETE api-keys` (10/saat; ham anahtar yalnız üretimde döner)
+
+## Public API (`/ext`, `Authorization: Bearer vt_…`, 120 istek/dk)
+`GET openapi.json` (kimliksiz) · `GET whoami` · `GET workloads` · `GET workloads/:id` · `GET evidence` · `GET evidence/verify` · `GET orders` · `GET orders/:id` · `POST orders`.
+Kapsamlar: `workloads:read` `evidence:read` `orders:read` `orders:write` `status:read` — eksik kapsam 403 `SCOPE_MISSING`. Kiracı bağlamı anahtardan gelir.
+
+## Webhook (`/webhooks`, HMAC — `express.json`'dan ÖNCE mount)
+`POST /webhooks/billing` · `POST /webhooks/tickets` — `x-veritut-signature` (sha256 HMAC, ham gövde). İmza geçersiz → 401 ve `webhook_inbox`'a kayıt. Sağlayıcı gövdesi adaptörde kanonik şemaya çevrilir.
+
 ## Operasyon (`/ops`, `vt_ops`)
 | Uç | Rol | Açıklama |
 | --- | --- | --- |
@@ -70,6 +97,10 @@ Kapsam dışı kaynak **404**. Haritasız segment **403** (fail-closed).
 | `POST /ops/runs/:id/approve` | senior, ≠ talep eden (403) | `awaiting_approval → running` |
 | `POST /ops/runs/:id/reject {reason}` | senior | `→ cancelled`; iş yükü eski hâline |
 | `GET /ops/changes` | operator | değişiklik kaydı |
+| `GET /ops/catalog` · `PUT /catalog/{products,plans,sla-tiers,prices}` (platform_admin) · `POST /catalog/products/:slug/publish` | operator | katalog yönetimi |
+| `GET /ops/orders` · `POST /ops/orders/:id/reject` (senior) | operator | sipariş kuyruğu |
+| `GET/PUT/DELETE /ops/tenants/:id/entitlement` (PUT/DELETE senior) | operator | plan istisnaları |
+| `GET /ops/kpi` · `POST /ops/kpi/compute` · `POST /ops/billing/push` (senior) · `POST /ops/billing/expire-trials` (senior) | operator | KPI ve dönem kapanışı |
 | `GET /ops/evidence/platform` | operator | platform zinciri + verdict |
 | `POST /ops/evidence/demo` | operator, **yalnız development** | demo kanıt olayı |
 

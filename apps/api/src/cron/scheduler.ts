@@ -57,6 +57,38 @@ export function startScheduler(): void {
       logger.error({ err }, '[CRON] probe saklama hatası');
     }
   });
+  // 02:15 — deneme süresi dolanları askıya al (ücretsiz katman sızmasına karşı, stratejik §9 risk 4)
+  cron.schedule('15 2 * * *', async () => {
+    try {
+      const { expireTrials } = await import('../services/billing.service.js');
+      const n = await expireTrials();
+      if (n > 0) logger.info({ n }, '[CRON] deneme süresi doldu');
+    } catch (err) {
+      logger.error({ err }, '[CRON] deneme expiry hatası');
+    }
+  });
+  // Ayın 1'i 05:00 — geçen dönemin kullanım kalemleri faturalama omurgasına
+  cron.schedule('0 5 1 * *', async () => {
+    try {
+      const d = new Date();
+      d.setUTCMonth(d.getUTCMonth() - 1);
+      const period = d.toISOString().slice(0, 7);
+      const { pushPeriod } = await import('../services/billing.service.js');
+      const r = await pushPeriod(period);
+      logger.info({ period, ...r }, '[CRON] dönem kapanışı');
+    } catch (err) {
+      logger.error({ err }, '[CRON] dönem kapanışı hatası');
+    }
+  });
+  // 06:00 — KPI anlık görüntüsü
+  cron.schedule('0 6 * * *', async () => {
+    try {
+      const { computeKpi } = await import('../services/kpi.service.js');
+      await computeKpi(new Date().toISOString().slice(0, 7));
+    } catch (err) {
+      logger.error({ err }, '[CRON] KPI hatası');
+    }
+  });
   void sql;
-  logger.info('cron scheduler hazır — 5 job (oturum, snapshot, provider-sync, sahipsiz kaynak, probe saklama)');
+  logger.info('cron scheduler hazır — 8 job (oturum, snapshot, provider-sync, sahipsiz kaynak, probe saklama, deneme expiry, dönem kapanışı, KPI)');
 }

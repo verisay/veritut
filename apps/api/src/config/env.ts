@@ -34,6 +34,16 @@ const envSchema = z.object({
   /** Worker/runner → API iç uçları. */
   INTERNAL_TOKEN: z.string().min(16),
 
+  /** Faturalama omurgası (D17) — Core para toplamaz. */
+  BILLING_PROVIDER: z.enum(['mock', 'fossbilling']).default('mock'),
+  FOSSBILLING_URL: z.string().default(''),
+  FOSSBILLING_API_KEY: z.string().default(''),
+  BILLING_WEBHOOK_SECRET: z.string().min(16, 'BILLING_WEBHOOK_SECRET en az 16 karakter'),
+  /** Destek masası (D18). */
+  TICKET_PROVIDER: z.enum(['mock', 'zammad']).default('mock'),
+  ZAMMAD_URL: z.string().default(''),
+  ZAMMAD_TOKEN: z.string().default(''),
+  TICKET_WEBHOOK_SECRET: z.string().min(16, 'TICKET_WEBHOOK_SECRET en az 16 karakter'),
   /** Blueprint kök dizini (dev: /app/infra/blueprints; prod deploy'da repo içi). */
   BLUEPRINTS_DIR: z.string().default(''),
   S3_ENDPOINT: z.string().default(''),

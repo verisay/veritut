@@ -7,7 +7,7 @@ import { ApiError } from '../utils/ApiError.js';
  * burada bildirilir; haritada olmayan segment → 403 + startup uyarısı. Yeni router eklemek
  * = bu haritaya satır eklemek; unutulursa uç açılmaz (sessiz açık yerine gürültülü kapalı).
  */
-export type GuardClass = 'public' | 'user' | 'staff' | 'internal' | 'webhook';
+export type GuardClass = 'public' | 'user' | 'staff' | 'internal' | 'webhook' | 'apikey';
 
 export const SEGMENT_GUARDS: Record<string, GuardClass> = {
   health: 'public',
@@ -20,6 +20,12 @@ export const SEGMENT_GUARDS: Record<string, GuardClass> = {
   internal: 'internal',
   webhooks: 'webhook',
   ws: 'staff',
+  catalog: 'public', // pazarlama + fiyat hesaplayıcı (kimliksiz, rate limitli)
+  orders: 'user',
+  billing: 'user',
+  support: 'user',
+  'api-keys': 'user',
+  ext: 'apikey', // public API — Bearer vt_… (D19)
 };
 
 export function guardMap(req: Request, _res: Response, next: NextFunction): void {

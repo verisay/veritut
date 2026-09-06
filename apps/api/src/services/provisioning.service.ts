@@ -212,6 +212,11 @@ export async function handoffWorkload(workloadId: string, runId: string, verifyO
     });
   }
   await db.update(changes).set({ status: verifyOk ? 'verified' : 'executing' }).where(and(eq(changes.runId, runId), eq(changes.status, 'approved')));
+  // Sipariş teslimi (K3): kurulum doğrulandıysa sipariş `fulfilled`.
+  if (verifyOk && kind === 'provision') {
+    const { markFulfilledByWorkload } = await import('./order.service.js');
+    await markFulfilledByWorkload(workloadId).catch(() => undefined);
+  }
   return { evidenceId: ev.id, status: verifyOk ? 'active' : 'degraded' };
 }
 
