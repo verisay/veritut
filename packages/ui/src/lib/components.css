@@ -1,0 +1,602 @@
+/**
+ * Bileşen sınıfları — token dilini kullanır (D20). `layer(components)`: utility'ler ezebilir.
+ * Kural: gölge yok, glow yok, gradient yalnız `.vt-hero` içinde; köşe 10/14 px; geçiş 150 ms.
+ */
+@layer components {
+  /* ── Tipografi ─────────────────────────────────────────────────────── */
+  .vt-h1 {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0;
+  }
+  .vt-h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+  .vt-h3 {
+    font-size: 17px;
+    font-weight: 800;
+    margin: 0;
+  }
+  .vt-lead {
+    font-size: 15.5px;
+    font-weight: 500;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+  .vt-kicker {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .vt-help {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-3);
+  }
+  .muted {
+    color: var(--text-2);
+  }
+
+  /* ── Buton ─────────────────────────────────────────────────────────── */
+  .vt-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 18px;
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+    color: inherit;
+    background: transparent;
+    transition:
+      background-color var(--dur) var(--ease),
+      border-color var(--dur) var(--ease),
+      color var(--dur) var(--ease),
+      transform var(--dur) var(--ease);
+  }
+  .vt-btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .vt-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  .vt-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .vt-btn-sm {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 12.5px;
+  }
+  .vt-btn-lg {
+    height: 44px;
+    padding: 0 22px;
+    font-size: 14.5px;
+  }
+  .vt-btn-primary {
+    background: var(--ink);
+    color: var(--ink-fg);
+  }
+  .vt-btn-primary:hover:not(:disabled) {
+    background: var(--ink-hover);
+  }
+  .vt-btn-secondary {
+    background: var(--card);
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .vt-btn-secondary:hover:not(:disabled) {
+    border-color: var(--text);
+  }
+  .vt-btn-soft {
+    background: var(--accent-soft);
+    color: var(--accent-deep);
+  }
+  .vt-btn-soft:hover:not(:disabled) {
+    background: var(--accent-soft-hover);
+  }
+  .vt-btn-ghost {
+    color: var(--text-2);
+    padding: 0 14px;
+  }
+  .vt-btn-ghost:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+  .vt-btn-danger {
+    background: var(--danger);
+    color: var(--danger-fg);
+  }
+  .vt-btn-danger:hover:not(:disabled) {
+    background: var(--danger-hover);
+  }
+  .vt-btn-full {
+    width: 100%;
+  }
+
+  /* ── Kart ──────────────────────────────────────────────────────────── */
+  .vt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+  }
+  .vt-card-pad {
+    padding: 22px;
+  }
+  .vt-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border);
+  }
+  .vt-card-title {
+    font-size: 15px;
+    font-weight: 800;
+    margin: 0;
+  }
+  .vt-card-sub {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-3);
+  }
+  .vt-card-foot {
+    border-top: 1px solid var(--border);
+    padding: 12px 22px;
+  }
+
+  /* ── Tablo — ops satır 36 px, gövde 13 px ─────────────────────────── */
+  .vt-table-wrap {
+    overflow-x: auto;
+  }
+  .vt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .vt-table thead th {
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-2);
+    padding: 0 12px 8px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .vt-table tbody td {
+    height: var(--row-h);
+    padding: 0 12px;
+    border-bottom: 1px solid var(--row-border);
+    vertical-align: middle;
+  }
+  .vt-table tbody tr {
+    transition: background-color var(--dur) var(--ease);
+  }
+  .vt-table tbody tr:hover {
+    background: var(--row-hover);
+  }
+  .vt-table .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .vt-table .mono {
+    font-size: 12px;
+  }
+
+  /* ── Durum dili ────────────────────────────────────────────────────── */
+  .vt-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    flex: none;
+  }
+  .vt-dot-sm {
+    width: 8px;
+    height: 8px;
+    font-size: 0;
+  }
+  .vt-dot[data-state='ok'] {
+    background: var(--st-ok);
+  }
+  .vt-dot[data-state='degraded'] {
+    background: var(--st-degraded);
+  }
+  .vt-dot[data-state='down'] {
+    background: var(--st-down);
+  }
+  .vt-dot[data-state='maintenance'] {
+    background: var(--st-maintenance);
+  }
+  .vt-dot[data-state='unknown'] {
+    background: var(--st-unknown);
+  }
+  .vt-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: var(--r-md);
+    padding: 7px 14px 7px 10px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .vt-status-sm {
+    padding: 3px 10px 3px 6px;
+    font-size: 12px;
+    gap: 6px;
+  }
+  .vt-status[data-state='ok'] {
+    background: var(--st-ok-bg);
+    color: var(--st-ok-fg);
+  }
+  .vt-status[data-state='degraded'] {
+    background: var(--st-degraded-bg);
+    color: var(--st-degraded-fg);
+  }
+  .vt-status[data-state='down'] {
+    background: var(--st-down-bg);
+    color: var(--st-down-fg);
+  }
+  .vt-status[data-state='maintenance'] {
+    background: var(--st-maintenance-bg);
+    color: var(--st-maintenance-fg);
+  }
+  .vt-status[data-state='unknown'] {
+    background: var(--st-unknown-bg);
+    color: var(--st-unknown-fg);
+  }
+  .vt-state-text[data-state='ok'] {
+    color: var(--st-ok);
+  }
+  .vt-state-text[data-state='degraded'] {
+    color: var(--st-degraded);
+  }
+  .vt-state-text[data-state='down'] {
+    color: var(--st-down);
+  }
+  .vt-state-text[data-state='maintenance'] {
+    color: var(--st-maintenance);
+  }
+  .vt-state-text[data-state='unknown'] {
+    color: var(--st-unknown);
+  }
+
+  /* ── İkametgâh rozeti ──────────────────────────────────────────────── */
+  .vt-res {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: var(--r-md);
+    padding: 5px 11px;
+    line-height: 1;
+  }
+  .vt-res-sm {
+    font-size: 11px;
+    padding: 4px 9px;
+    border-radius: 8px;
+  }
+  .vt-res[data-res='TR'] {
+    background: var(--res-tr-bg);
+    color: var(--res-tr-fg);
+  }
+  .vt-res[data-res='EU'] {
+    background: var(--res-eu-bg);
+    color: var(--res-eu-fg);
+  }
+  .vt-res[data-res='US'] {
+    background: var(--res-us-bg);
+    color: var(--res-us-fg);
+  }
+
+  /* ── Kanıt dili — hash çipi ────────────────────────────────────────── */
+  .vt-hash {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: var(--r-md);
+    padding: 8px 8px 8px 14px;
+    background: var(--accent-soft);
+    color: var(--accent-deep);
+    font-weight: 800;
+    font-size: 13px;
+  }
+  .vt-hash[data-broken='true'] {
+    background: var(--st-down-bg);
+    color: var(--st-down-fg);
+    padding-right: 14px;
+  }
+  .vt-hash code {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--card);
+    border-radius: var(--r-chip);
+    padding: 4px 10px;
+  }
+  .vt-hash[data-broken='true'] code {
+    color: var(--st-down-fg);
+  }
+  .vt-hash button {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-deep);
+    background: transparent;
+    border: 1px solid var(--accent-bd);
+    border-radius: var(--r-chip);
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: background-color var(--dur) var(--ease);
+  }
+  .vt-hash button:hover {
+    background: var(--card);
+  }
+
+  /* ── Form ──────────────────────────────────────────────────────────── */
+  .vt-label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .vt-input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 38px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-md);
+    padding: 0 12px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    outline: none;
+    transition: border-color var(--dur) var(--ease);
+  }
+  .vt-input.mono {
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .vt-input:focus {
+    border-color: var(--text);
+  }
+  .vt-input[aria-invalid='true'] {
+    border-color: var(--danger);
+  }
+  .vt-field-error {
+    margin: 6px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--st-down-fg);
+  }
+
+  /* ── Sekmeler ──────────────────────────────────────────────────────── */
+  .vt-tabs {
+    display: flex;
+    gap: 2px;
+    border-bottom: 1px solid var(--border);
+  }
+  .vt-tab {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-3);
+    padding: 8px 14px;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: color var(--dur) var(--ease);
+  }
+  .vt-tab:hover {
+    color: var(--text);
+  }
+  .vt-tab[aria-selected='true'] {
+    color: var(--text);
+    border-bottom-color: var(--text);
+  }
+
+  /* ── Toast ─────────────────────────────────────────────────────────── */
+  .vt-toast-stack {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 60;
+    max-width: min(440px, calc(100vw - 40px));
+  }
+  .vt-toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: var(--r-md);
+    padding: 12px 16px;
+    font-size: 13.5px;
+    background: var(--toast-bg);
+    color: var(--toast-fg);
+  }
+  .vt-toast[data-kind='error'] {
+    background: var(--card);
+    color: var(--st-down-fg);
+    border: 1px solid var(--st-down-bd);
+  }
+  .vt-toast[data-kind='warning'] {
+    background: var(--st-degraded-bg);
+    color: var(--st-degraded-fg);
+  }
+
+  /* ── Modal ─────────────────────────────────────────────────────────── */
+  .vt-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 21, 34, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 50;
+  }
+  .vt-modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    width: 440px;
+    max-width: 100%;
+    padding: 26px;
+  }
+  .vt-modal-title {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 800;
+  }
+  .vt-modal-body {
+    margin: 0 0 18px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-2);
+    line-height: 1.55;
+  }
+  .vt-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .vt-codebox {
+    background: var(--surface-2);
+    border-radius: var(--r-md);
+    padding: 12px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-2);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  /* ── Sayfa iskeleti ────────────────────────────────────────────────── */
+  .page-wrap {
+    max-width: 1180px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+  @media (min-width: 640px) {
+    .page-wrap {
+      padding-inline: 28px;
+    }
+  }
+  .vt-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: var(--topbar);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .vt-nav a {
+    display: block;
+    padding: 8px 12px;
+    border-radius: var(--r-md);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-2);
+    transition:
+      background-color var(--dur) var(--ease),
+      color var(--dur) var(--ease);
+  }
+  .vt-nav a:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  .vt-nav a[aria-current='page'] {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+
+  /* ── Pazarlama hero — gradient YALNIZ burada ───────────────────────── */
+  .vt-hero {
+    background: var(--brand-hero);
+    color: #ffffff;
+    border-radius: var(--r-lg);
+  }
+
+  /* ── Uptime çubukları ──────────────────────────────────────────────── */
+  .vt-bars {
+    display: flex;
+    gap: 2px;
+  }
+  .vt-bars span {
+    flex: 1;
+    height: 22px;
+    border-radius: 2px;
+    background: var(--st-unknown-bg);
+  }
+  .vt-bars span[data-state='ok'] {
+    background: var(--st-ok);
+  }
+  .vt-bars span[data-state='degraded'] {
+    background: var(--st-degraded);
+  }
+  .vt-bars span[data-state='down'] {
+    background: var(--st-down);
+  }
+  .vt-bars span[data-state='maintenance'] {
+    background: var(--st-maintenance);
+  }
+
+  /* ── Log görünümü (canlı çalıştırma) ──────────────────────────────── */
+  .vt-log {
+    background: #0b1522;
+    color: #e7edf3;
+    border: 1px solid #233850;
+    border-radius: var(--r-lg);
+    padding: 16px 18px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    max-height: 60vh;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .vt-log .t {
+    color: #6f8398;
+    margin-right: 10px;
+  }
+  .vt-log .err {
+    color: #f19a93;
+  }
+  .vt-log .ok {
+    color: #3bd3a8;
+  }
+}

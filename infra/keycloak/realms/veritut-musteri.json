@@ -1,0 +1,61 @@
+{
+  "realm": "veritut-musteri",
+  "displayName": "VERITUT",
+  "enabled": true,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "verifyEmail": false,
+  "sslRequired": "external",
+  "internationalizationEnabled": true,
+  "supportedLocales": ["tr", "en"],
+  "defaultLocale": "tr",
+  "bruteForceProtected": true,
+  "failureFactor": 5,
+  "waitIncrementSeconds": 60,
+  "maxFailureWaitSeconds": 900,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 43200,
+  "ssoSessionMaxLifespan": 86400,
+  "clients": [
+    {
+      "clientId": "portal",
+      "name": "VERITUT müşteri portalı",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "dev-portal-secret-change-me",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["https://vt-portal.dev-fethi.entra.net/api/v1/auth/callback", "http://localhost:5240/api/v1/auth/callback"],
+      "webOrigins": ["https://vt-portal.dev-fethi.entra.net"],
+      "attributes": { "pkce.code.challenge.method": "S256", "post.logout.redirect.uris": "https://vt-portal.dev-fethi.entra.net/*##http://localhost:5240/*" },
+      "defaultClientScopes": ["profile", "email"]
+    }
+  ],
+  "users": [
+    {
+      "username": "musteri@veritut.local",
+      "email": "musteri@veritut.local",
+      "firstName": "Deneme",
+      "lastName": "Müşteri",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "musteri-dev-parola", "temporary": false }]
+    },
+    {
+      "username": "musteri2@veritut.local",
+      "email": "musteri2@veritut.local",
+      "firstName": "İkinci",
+      "lastName": "Müşteri",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "musteri2-dev-parola", "temporary": false }]
+    }
+  ]
+}

@@ -1,0 +1,199 @@
+/**
+ * VERITUT tasarım token'ları — TEK kaynak (D20).
+ * Kaynak: Claude Design "Veritut Design System" v1.0 (ai-plans/Veritut Design System/).
+ * His: emanet, sükûnet, kanıt. Nötr petrol-lacivert aile + tek vurgu (kanıt yeşili).
+ * Bu dosya dışında token/renk tanımlamak YASAK; app'ler `@veritut/ui/tokens.css` import eder.
+ */
+@layer base {
+  :root {
+    /* Yüzey */
+    --bg: #f4f6f7;
+    --card: #ffffff;
+    --surface-2: #ebeef1;
+    --surface-3: #f0f2f4;
+    --input-bg: #ffffff;
+    --topbar: rgba(244, 246, 247, 0.86);
+
+    /* Metin — 3 kademe (mürekkep, mürekkep-2, yardımcı) */
+    --text: #13223a;
+    --text-2: #3d5266;
+    --text-3: #66788a;
+
+    /* Kenarlık */
+    --border: #e2e8eb;
+    --border-strong: #c9d3d9;
+    --row-border: #e2e8eb;
+    --row-hover: #f4f6f7;
+
+    /* Birincil dolgu — mürekkep (marka renginde değil) */
+    --ink: #13223a;
+    --ink-hover: #1c3253;
+    --ink-fg: #ffffff;
+
+    /* Vurgu — kanıt yeşili: yalnız kanıt/doğrulandı dili ve yumuşak birincil eylem */
+    --accent: #2cc5a2;
+    --accent-text: #0e8c70;
+    --accent-deep: #116e55;
+    --accent-soft: #ddf3ec;
+    --accent-soft-hover: #cdede2;
+    --accent-bd: #9bd8c6;
+
+    /* Durum dili — 5 durum × (dot / bg / fg). Sabit, semantik. */
+    --st-ok: #148667;
+    --st-ok-bg: #dff2ec;
+    --st-ok-fg: #116e55;
+    --st-degraded: #a96a0b;
+    --st-degraded-bg: #f7ecd9;
+    --st-degraded-fg: #7e5008;
+    --st-down: #bf3b32;
+    --st-down-bg: #f9e3e1;
+    --st-down-fg: #8f2a23;
+    --st-down-bd: #ecc7c4;
+    --st-maintenance: #3a6dae;
+    --st-maintenance-bg: #e3ecf7;
+    --st-maintenance-fg: #2a517f;
+    --st-unknown: #64737f;
+    --st-unknown-bg: #ebeef1;
+    --st-unknown-fg: #48555f;
+
+    /* İkametgâh rozetleri — sabit biçim */
+    --res-tr-bg: #e2e8eb;
+    --res-tr-fg: #13223a;
+    --res-eu-bg: #ebeef1;
+    --res-eu-fg: #3d5266;
+    --res-us-bg: #f0f2f4;
+    --res-us-fg: #66788a;
+
+    /* Tehlike (yıkıcı eylem) */
+    --danger: #bf3b32;
+    --danger-hover: #a93129;
+    --danger-fg: #ffffff;
+
+    /* Toast (her iki temada koyu) */
+    --toast-bg: #13223a;
+    --toast-fg: #ffffff;
+
+    /* Marka geçişi — YALNIZ pazarlama hero'su */
+    --brand-hero: linear-gradient(135deg, #0b1522 0%, #13223a 55%, #116e55 100%);
+
+    /* Odak halkası */
+    --ring: rgba(19, 34, 58, 0.22);
+
+    /* Tipografi */
+    --font-sans: 'Manrope Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono Variable', ui-monospace, Menlo, monospace;
+
+    /* Yarıçap — köşelilik = sağlamlık: buton/input 10, kart/modal 14, çip 6 */
+    --r-chip: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
+    --r-full: 9999px;
+
+    /* Hareket — 150 ms; gölge YOK, glow YOK */
+    --dur: 150ms;
+    --ease: cubic-bezier(0.2, 0.6, 0.2, 1);
+
+    /* Yoğunluk — ops tablo satırı 36 px */
+    --row-h: 36px;
+  }
+
+  .dark {
+    --bg: #0b1522;
+    --card: #111f31;
+    --surface-2: #16263c;
+    --surface-3: #1a2b41;
+    --input-bg: rgba(255, 255, 255, 0.04);
+    --topbar: rgba(11, 21, 34, 0.86);
+
+    --text: #e7edf3;
+    --text-2: #a9bbcc;
+    --text-3: #6f8398;
+
+    --border: #233850;
+    --border-strong: #35506d;
+    --row-border: #1a2b41;
+    --row-hover: #16263c;
+
+    --ink: #e7edf3;
+    --ink-hover: #ffffff;
+    --ink-fg: #0b1522;
+
+    --accent: #3bd3a8;
+    --accent-text: #3bd3a8;
+    --accent-deep: #8fe3cd;
+    --accent-soft: rgba(44, 197, 162, 0.14);
+    --accent-soft-hover: rgba(44, 197, 162, 0.22);
+    --accent-bd: rgba(44, 197, 162, 0.4);
+
+    --st-ok: #3bd3a8;
+    --st-ok-bg: rgba(59, 211, 168, 0.14);
+    --st-ok-fg: #8fe3cd;
+    --st-degraded: #e5a93d;
+    --st-degraded-bg: rgba(229, 169, 61, 0.14);
+    --st-degraded-fg: #f0c775;
+    --st-down: #e0645b;
+    --st-down-bg: rgba(224, 100, 91, 0.14);
+    --st-down-fg: #f19a93;
+    --st-down-bd: rgba(224, 100, 91, 0.4);
+    --st-maintenance: #6ea5e8;
+    --st-maintenance-bg: rgba(110, 165, 232, 0.14);
+    --st-maintenance-fg: #a6c8f2;
+    --st-unknown: #8a9bab;
+    --st-unknown-bg: rgba(138, 155, 171, 0.14);
+    --st-unknown-fg: #b6c3cf;
+
+    --res-tr-bg: #233850;
+    --res-tr-fg: #e7edf3;
+    --res-eu-bg: #1a2b41;
+    --res-eu-fg: #a9bbcc;
+    --res-us-bg: #16263c;
+    --res-us-fg: #6f8398;
+
+    --danger: #e0645b;
+    --danger-hover: #f19a93;
+    --danger-fg: #0b1522;
+
+    --toast-bg: #e7edf3;
+    --toast-fg: #0b1522;
+
+    --ring: rgba(231, 237, 243, 0.28);
+  }
+
+  html {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  a {
+    color: var(--accent-text);
+    text-decoration: none;
+    transition: color var(--dur) var(--ease);
+  }
+  a:hover {
+    color: var(--text);
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  code,
+  kbd,
+  pre,
+  .mono {
+    font-family: var(--font-mono);
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}

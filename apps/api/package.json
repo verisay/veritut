@@ -1,0 +1,49 @@
+{
+  "name": "@veritut/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "check": "tsc --noEmit",
+    "test": "sh -c 'F=$(find src -name \"*.test.ts\"); [ -n \"$F\" ] && tsx --test $F || echo \"test dosyası yok\"'",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:seed": "tsx src/db/seed.ts"
+  },
+  "dependencies": {
+    "@veritut/types": "workspace:*",
+    "@veritut/validators": "workspace:*",
+    "bullmq": "^5.34.0",
+    "compression": "^1.7.5",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "drizzle-orm": "^0.38.3",
+    "express": "^5.1.0",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.2",
+    "jose": "^5.9.6",
+    "node-cron": "^3.0.3",
+    "pg": "^8.13.1",
+    "pino": "^9.6.0",
+    "pino-http": "^10.4.0",
+    "ws": "^8.18.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.7.5",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/express-serve-static-core": "^5.0.0",
+    "@types/node": "^22.20.1",
+    "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.11.10",
+    "@types/ws": "^8.5.13",
+    "pino-pretty": "^13.0.0",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

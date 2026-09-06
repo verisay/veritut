@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Secret taraması — staged içerikte sır deseni ararsa commit'i durdurur (uygulama planı K0).
+# Bypass: SKIP_HOOKS=1 git commit ...  (yalnız bilinçli kullanım)
+set -euo pipefail
+[ "${SKIP_HOOKS:-0}" = "1" ] && exit 0
+
+PATTERNS='(BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|AKIA[0-9A-Z]{16}|xox[baprs]-[0-9A-Za-z-]{10,}|password\s*=\s*['"'"'"][^'"'"'"]{8,}|SECRET\s*=\s*[0-9a-f]{32,}|_KEY\s*=\s*[0-9a-f]{32,})'
+
+files=$(git diff --cached --name-only --diff-filter=ACM | grep -vE '(^|/)(pnpm-lock\.yaml|.*\.(png|jpg|webp|woff2?))$' || true)
+[ -z "$files" ] && exit 0
+
+fail=0
+for f in $files; do
+  # .env.example placeholder'ları serbest
+  case "$f" in *.env.example) continue ;; esac
+  if git show ":$f" | grep -qiE "$PATTERNS"; then
+    echo "✗ Olası secret: $f" >&2
+    fail=1
+  fi
+done
+
+if [ "$fail" = "1" ]; then
+  echo "Commit durduruldu — sır tespit edildi. Emin misiniz? SKIP_HOOKS=1 ile bypass." >&2
+  exit 1
+fi

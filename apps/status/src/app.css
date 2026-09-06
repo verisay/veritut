@@ -1,0 +1,7 @@
+/* Fontlar self-host — Google Fonts'a sıfır istek. */
+@import '@fontsource-variable/manrope';
+@import '@fontsource-variable/jetbrains-mono';
+@import 'tailwindcss';
+/* Token'lar TEK kaynaktan (D20) — bu app'te token tanımlamak yasak. */
+@import '@veritut/ui/tokens.css' layer(base);
+@import '@veritut/ui/components.css' layer(components);

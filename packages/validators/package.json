@@ -1,0 +1,20 @@
+{
+  "name": "@veritut/validators",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "sh -c 'F=$(find src -name \"*.test.ts\"); [ -n \"$F\" ] && tsx --test $F || echo \"test dosyası yok\"'"
+  },
+  "dependencies": {
+    "@veritut/types": "workspace:*",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

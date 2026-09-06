@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Conventional Commits zorunlu (uygulama planı K0). Gövde Türkçe yazılabilir.
+set -euo pipefail
+[ "${SKIP_HOOKS:-0}" = "1" ] && exit 0
+
+msg=$(head -n1 "$1")
+if ! echo "$msg" | grep -qE '^(feat|fix|chore|refactor|docs|test|perf|style|ci|build|revert)(\([a-z0-9,-]+\))?!?: .+'; then
+  echo "✗ Commit mesajı Conventional Commits formatında değil:" >&2
+  echo "  örn: feat(api): sağlık ucu eklendi" >&2
+  echo "  tipler: feat fix chore refactor docs test perf style ci build revert" >&2
+  exit 1
+fi

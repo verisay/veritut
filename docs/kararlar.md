@@ -1,0 +1,22 @@
+# Mikro karar kaydı
+
+Plan boşluğunda alınan kararlar: `tarih · karar · gerekçe · dosya`. Plan revizyonu gerektirenler burada DEĞİL, planda.
+
+| # | Tarih | Karar | Gerekçe | Dosya |
+| --- | --- | --- | --- | --- |
+| 1 | 2026-09-06 | Test koşucusu `node:test` + `tsx` (Vitest yerine) | Klasman/KD kalıbı; bağımlılık listesi kısa kalır. Vitest listede kalır, gerekirse geçilir | `*/package.json` `test` |
+| 2 | 2026-09-06 | Runner ↔ API iletişimi: Redis (BullMQ) + `/internal/*` (INTERNAL_TOKEN); runner'da DB kimlik bilgisi yok | D5 patlama yarıçapı; Klasman worker deseni | `apps/runner/src/index.ts`, `routes/internal.routes.ts` |
+| 3 | 2026-09-06 | OIDC code flow `jose` + fetch ile açık uygulama (`openid-client` kullanılmadı) | İç/dış Keycloak host ayrımı (hairpin) için endpoint'leri elle iç URL'e çevirmek gerekiyor; şeffaf ve 150 satır. `openid-client` izinli listede kalır | `apps/api/src/lib/oidc.ts` |
+| 4 | 2026-09-06 | Oturumdaki Keycloak refresh/id token'ları simetrik AES-256-GCM (`SESSION_ENC_KEY`) ile; D12 asimetrik zarf yalnız tedarikçi/iş yükü sırları için | Oturum token'ını API'nin kendisi kullanır (logout/refresh), asimetrik zarf anlamsız | `apps/api/src/lib/crypto.ts` |
+| 5 | 2026-09-06 | Dev realm'lerinde ops MFA `CONFIGURE_TOTP` zorunlu DEĞİL; prod realm export'unda zorunlu | Smoke/otomasyon için; D6 prod kuralı değişmedi | `infra/keycloak/realms/veritut-ops.json` |
+| 6 | 2026-09-06 | Dev Redis ACL: `status` kullanıcısı sabit dev parolası ile (`status-dev-only`) | ACL dosyası env interpolasyonu yapmaz; prod'da EnvironmentFile'dan üretilir | `infra/redis/users.acl` |
+| 7 | 2026-09-06 | Personel rolü Keycloak realm rolünden (`roles` claim, ID token mapper) — DB `staff.role` her girişte senkronlanır | Rol yönetimi tek yerde (Keycloak); break-glass hariç | `routes/auth.routes.ts` `highestStaffRole` |
+| 8 | 2026-09-06 | Aktif kiracı seçimi portalda `vt_tenant` çerezi (HttpOnly değil, yetki taşımaz); yetki her istekte `X-Tenant-Id` + üyelikle doğrulanır | Çerez yalnız UI tercihi; güvenlik `resolveTenant`'ta | `apps/portal/src/routes/panel/+layout.server.ts` |
+| 9 | 2026-09-06 | `evidence_events.tenant_id NULL` = platform zinciri; kısmi UNIQUE index (`seq WHERE tenant_id IS NULL`) | Tek tablo, iki zincir sınıfı; ayrı tablo şişkinliği yok | `0001_init.sql` |
+| 10 | 2026-09-06 | Portal `(public)` + `/panel` aynı SvelteKit app'te route grubu (base path yok) | KD `docs/prod.md` base-path tuzağı; çerez tek host | `apps/portal/src/routes/` |
+| 11 | 2026-09-06 | Runner imajında OpenTofu/Ansible/Restic `INSTALL_IAC` build arg'ı ile (varsayılan 1); ağ kısıtlı ortamda 0 | K0 yalnız echo koşar; imaj yine de D10 araçlarını taşımalı | `infra/Dockerfile.runner` |
+| 12 | 2026-09-06 | İç servis URL'leri proje-özel DNS alias ile (`veritut-api`, `veritut-keycloak`, `veritut-portal`, `veritut-ops`) | Traefik ağı filoda paylaşımlı; çıplak `api` adı CarRentall API'sine çözüldü (ops 500: "X-CRL-Surface başlığı gerekli"). Filo geneli tuzak | `infra/compose.dev.yml`, `infra/.env.example`, `db/seed.ts` |
+| 13 | 2026-09-06 | Runner `backup` kind: K1'de restic runner konteynerinde koşar (hedef VM'de değil); yol yoksa iş yükü meta verisinden örnek küme alınır | Yedek→kanıt boru hattını gerçek restic + S3 ile K1'de kanıtlamak; hedef sunucu yolları Ansible ile K2'de | `apps/runner/src/jobs/backup.ts` |
+| 14 | 2026-09-06 | Gelir K1'de elle (`workload_revenue`), K3'te faturalama aynası devralır; marj TRY tabanında `fx_rates` ile karşılaştırılır | Stratejik 'İlk 30 gün' madde 3 (gerçek brüt marj) faturalama omurgası beklemeden cevaplanmalı | `services/cost.service.ts` |
+| 15 | 2026-09-06 | Fatura CSV satırı envanter external_id ile eşleşirse `direct` tahsis yazılır ve aynı dönemin `estimate` tahsisi silinir | Gerçek maliyet tahmini ezer; iki kez sayılmaz | `cost.service.ts importInvoiceCsv` |
+| 16 | 2026-09-06 | Erişim şeffaflığı: `access.session` kanıtı + kiracıya bildirim ingest anında (onay/gizleme yok) | Plan §6.5 — satış argümanı; personel erişimi müşteriden gizlenmez | `services/access.service.ts` |

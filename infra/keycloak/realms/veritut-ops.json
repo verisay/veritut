@@ -1,0 +1,77 @@
+{
+  "realm": "veritut-ops",
+  "displayName": "VERITUT Operasyon",
+  "enabled": true,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "sslRequired": "external",
+  "internationalizationEnabled": true,
+  "supportedLocales": ["tr", "en"],
+  "defaultLocale": "tr",
+  "bruteForceProtected": true,
+  "failureFactor": 3,
+  "waitIncrementSeconds": 300,
+  "maxFailureWaitSeconds": 3600,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 28800,
+  "ssoSessionMaxLifespan": 43200,
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyDigits": 6,
+  "otpPolicyPeriod": 30,
+  "roles": {
+    "realm": [
+      { "name": "operator", "description": "Nöbet, olay, runbook yürütme" },
+      { "name": "senior", "description": "Yüksek riskli değişiklik onayı, tedarikçi hesabı" },
+      { "name": "platform_admin", "description": "Katalog, fiyat, kiracı yönetimi, KPI" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "ops",
+      "name": "VERITUT operasyon paneli",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "dev-ops-secret-change-me",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": ["https://vt-ops.dev-fethi.entra.net/api/v1/auth/callback", "http://localhost:5241/api/v1/auth/callback"],
+      "webOrigins": ["https://vt-ops.dev-fethi.entra.net"],
+      "attributes": { "pkce.code.challenge.method": "S256", "post.logout.redirect.uris": "https://vt-ops.dev-fethi.entra.net/*##http://localhost:5241/*" },
+      "defaultClientScopes": ["profile", "email", "roles"],
+      "protocolMappers": [
+        {
+          "name": "realm roles → id token",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "ops@veritut.local",
+      "email": "ops@veritut.local",
+      "firstName": "Deneme",
+      "lastName": "Operatör",
+      "enabled": true,
+      "emailVerified": true,
+      "realmRoles": ["platform_admin"],
+      "credentials": [{ "type": "password", "value": "ops-dev-parola", "temporary": false }]
+    }
+  ]
+}

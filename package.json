@@ -1,0 +1,40 @@
+{
+  "name": "veritut",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.17.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "dev:api": "pnpm --filter @veritut/api dev",
+    "dev:worker": "pnpm --filter @veritut/worker dev",
+    "dev:runner": "pnpm --filter @veritut/runner dev",
+    "dev:portal": "pnpm --filter @veritut/portal dev",
+    "dev:ops": "pnpm --filter @veritut/ops dev",
+    "dev:status": "pnpm --filter @veritut/status dev",
+    "build": "turbo run build",
+    "check": "turbo run check",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "turbo run test",
+    "db:migrate": "pnpm --filter @veritut/api db:migrate",
+    "db:seed": "pnpm --filter @veritut/api db:seed",
+    "keys:runner": "node tools/gen-runner-keys.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "prettier": "^3.4.2",
+    "prettier-plugin-svelte": "^3.3.3",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.20.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}
