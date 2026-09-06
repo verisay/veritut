@@ -1,6 +1,6 @@
 # VERITUT — kalan işler
 
-Son güncelleme: 2026-09-07 · K0–K4 tamamlandı (288 smoke senaryosu yeşil) · prod sunucu ayakta (`2.29.31.37`, tek makine).
+Son güncelleme: 2026-09-07 · K0–K4 tamamlandı (288 smoke senaryosu yeşil) · **prod yayında**: `veritut.com` (origin `2.29.31.37`, Cloudflare proxy, Let's Encrypt).
 Kaynak: `ai-plans/VERITUT-Uygulama-Plani.md` §14 (fazlar) ve §17 (açılış kontrol listesi).
 Bu dosya **yaşayan listedir**: bir madde kapanınca buradan silinir, ilgili faz notu `CLAUDE.md` §7'ye yazılır.
 
@@ -12,7 +12,7 @@ Bu dosya **yaşayan listedir**: bir madde kapanınca buradan silinir, ilgili faz
 
 | # | Konu | Durum | Önem | Nereye ait |
 | --- | --- | --- | --- | --- |
-| B1 | **Prod topolojisi ve deploy** — `infra/prod/` yazıldı, `2.29.31.37` (`veritut-prod`) ayakta: 11 servis aktif, 5 migration + seed uygulandı, smoke yeşil. Kalan: DNS/TLS (D3), `deploy.sh` provası, geri alma provası. | **kısmen kapandı** | **kritik** | plan §13, `infra/prod/README.md` |
+| B1 | **Prod topolojisi ve deploy** — `infra/prod/` depoda, `veritut.com` yayında: 11 servis aktif, 5 migration + seed, TLS (LE, 7 ad), `deploy.sh` 3 kez sorunsuz + geri alma provası geçti. Kalan yalnız fiziksel ayrım maddeleri (B1a/b/c). | **kapandı** | — | plan §13, `infra/prod/README.md` |
 | B1a | **Status ana yığınla aynı makinede.** Plan §13 ayrı tedarikçi ister; şu an ana yığın düşerse durum sayfası da düşer. | açık | **kritik** | D14, plan §13 |
 | B1b | **Yedekler aynı makinede (MinIO).** 3-2-1'in offsite bacağı yok; VERITUT'un kendi DB'si için yedek/restore tatbikatı da yapılmadı. | açık | **kritik** | plan §13, §17 |
 | B1c | **Runner fiziksel olarak ayrı değil.** İzolasyon UNIX kullanıcısı + systemd düzeyinde (`veritut-runner`, DB kimliği yok, gelen port yok); ikinci sunucu gelince taşınacak. | açık | yüksek | D5, kararlar #37 |
@@ -30,6 +30,7 @@ Bu dosya **yaşayan listedir**: bir madde kapanınca buradan silinir, ilgili faz
 | B13 | **Staging ortamı yok.** Plan Faz 2'de öngörülmüştü. | açık | orta | plan §13 |
 | B14 | **Prod'da e-posta, faturalama ve destek sağlayıcıları `mock`.** Kurulum bilinçli olarak mock ile açıldı; canlıya B4/B7 ile geçilir. | açık | yüksek | D9/D17/D18 |
 | B15 | **Prod yedekleme otomasyonu yok:** Postgres için pg_dump zamanlaması, MinIO içeriği için offsite kopya, restore prosedürü yazılmadı. | açık | **kritik** | plan §13 |
+| B16 | **`s3.veritut.com` Cloudflare proxy'si arkasında** — ücretsiz planda istek gövdesi 100 MB ile sınırlı; restic paketleri büyürse yedek yazımı kırılır. Çözüm: bu adı DNS-only yapmak veya S3'ü ayrı tedarikçiye taşımak (B1b ile birlikte). | açık | orta | tuzak: CF gövde sınırı |
 
 **Kapanan borçlar** (kayıt için): dini bayram takvimi seed'i (K4'te 41 gün), sapma taraması cron'u (K4), kanıt paketi PDF (K4), `restore_drills` gerçek uygulaması (K4).
 
@@ -81,8 +82,8 @@ Bayi ve beyaz etiket (hiyerarşik kiracı, bayi fiyat listesi, marka override) �
 
 | Madde | Durum |
 | --- | --- |
-| Domain + DNS + wildcard sertifika | ✗ D3 — sunucu hazır, `infra/prod/tls-issue.sh` DNS'i bekliyor (şimdilik self-signed) |
-| `deploy.sh` 3 kez sorunsuz + rollback provası | ~ `deploy.sh` yazıldı; ilk kurulum elle koşuldu, 3'lü prova ve geri alma provası yapılmadı |
+| Domain + DNS + wildcard sertifika | ✓ `veritut.com` + 6 alt ad Cloudflare'de, origin Let's Encrypt (2026-12-05'e kadar, `certbot.timer`). Wildcard `*.uygulama.veritut.com` K2 iş yükleri için henüz yok |
+| `deploy.sh` 3 kez sorunsuz + rollback provası | ✓ 2026-09-07: 3 tur yeşil (biri migration'lı), geri alma provası kasıtlı kırmızı smoke ile doğrulandı — eski sürüme geçti, smoke düştü, otomatik önceki sha'ya döndü |
 | Status sayfası farklı tedarikçide, ana yığın kapalıyken ayakta | ✗ B1a — prod'da aynı makinede çalışıyor |
 | VERITUT'un kendi DB'si için offsite yedek + restore tatbikatı | ✗ B1b + B15 |
 | Kiracı izolasyon e2e + fail-closed testleri CI'da zorunlu | ~ testler var (288 senaryo), CI'da yalnız birim + tip + tofu validate koşuyor; smoke paketleri CI'ya bağlanmadı |

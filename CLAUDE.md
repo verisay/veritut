@@ -111,8 +111,9 @@ ssh root@2.29.31.37 'bash /srv/veritut/app/infra/prod/smoke.sh'
 ```
 
 Sırlar `/etc/veritut/secrets.env` (0600 root) → servis başına env; **`RUNNER_PRIVATE_KEY` yalnız `runner.env`'de** (grup `veritut-runner`,
-`veritut` kullanıcısı okuyamaz — smoke ölçer). Alan adı `veritut.com` henüz DNS'te yok: sertifika şimdilik self-signed,
-DNS yöneldiğinde `infra/prod/tls-issue.sh`. Status ayrı tedarikçide DEĞİL ve yedekler aynı makinede — `docs/kalan-isler.md` B1a/B1b.
+`veritut` kullanıcısı okuyamaz — smoke ölçer). Yüzeyler: `veritut.com` · `ops.` · `durum.` · `kimlik.` · `api.` · `s3.`,
+DNS Cloudflare (proxy açık), origin sertifikası Let's Encrypt (`infra/prod/tls-issue.sh`, yenileme `certbot.timer`).
+Status ayrı tedarikçide DEĞİL ve yedekler aynı makinede — `docs/kalan-isler.md` B1a/B1b.
 
 ---
 
