@@ -1,12 +1,12 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, ResidencyBadge, StatusDot } from '@veritut/ui';
+  import { Button, Card, PageHead, ResidencyBadge, StatusDot, Table } from '@veritut/ui';
   import { PROVIDERS, RESIDENCIES } from '@veritut/types';
   import { formatDateTime, formatDuration } from '@veritut/shared';
   let { data, form } = $props();
 </script>
 
-<h1 class="vt-h1" style="margin-bottom:6px">Yedekler</h1>
+<PageHead title="Yedekler" variant="ops" />
 <p class="vt-lead" style="margin:0 0 20px">Restic, 3-2-1: offsite kopya farklı tedarikçide, ikametgâh kuralına tabi. Her sonuç kanıt zincirine düşer.</p>
 <div style="display:grid; grid-template-columns:1fr 380px; gap:14px; align-items:start">
   <div style="display:grid; gap:14px">

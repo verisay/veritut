@@ -1,12 +1,12 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, ResidencyBadge, Button } from '@veritut/ui';
+  import { Button, Card, PageHead, ResidencyBadge, Table } from '@veritut/ui';
   import { RESIDENCIES } from '@veritut/types';
   import { formatDate } from '@veritut/shared';
   let { data, form } = $props();
 </script>
 
-<h1 class="vt-h1" style="margin-bottom:20px">Kiracılar</h1>
+<PageHead title="Kiracılar" variant="ops" />
 <div style="display:grid; grid-template-columns:1fr 340px; gap:14px; align-items:start">
   <Card padded={false}>
     <Table>

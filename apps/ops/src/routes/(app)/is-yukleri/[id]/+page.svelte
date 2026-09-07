@@ -1,6 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, ResidencyBadge, StatusDot, Modal } from '@veritut/ui';
+  import { Button, Card, Modal, PageHead, ResidencyBadge, StatusDot, Table } from '@veritut/ui';
   let destroyOpen = $state(false);
   import { WORKLOAD_STATUS_LABEL, type WorkloadStatus } from '@veritut/types';
   import { formatDateTime, formatDuration } from '@veritut/shared';
@@ -9,15 +9,15 @@
   const period = new Date().toISOString().slice(0, 7);
 </script>
 
-<p class="vt-kicker"><a href="/is-yukleri">İş yükleri</a> / {w.slug}</p>
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin:4px 0 20px; gap:16px">
-  <div><h1 class="vt-h1">{w.name} <ResidencyBadge residency={w.residency} /></h1><p class="vt-help" style="margin:4px 0 0">{w.productSlug} · {w.providerCode ?? '—'}{w.region ? `/${w.region}` : ''} · {WORKLOAD_STATUS_LABEL[w.status as WorkloadStatus] ?? w.status} · <a href="/kiracilar/{w.tenantId}">kiracı</a></p></div>
-  <div style="display:flex; gap:8px; align-items:center">
+<PageHead title={w.name} eyebrow="iş yükleri" variant="ops">
+  {#snippet badge()}<ResidencyBadge residency={w.residency} />{/snippet}
+  <p class="vt-help" style="margin:6px 0 0"><span class="mono">{w.slug}</span> · {w.productSlug} · {w.providerCode ?? '—'}{w.region ? `/${w.region}` : ''} · {WORKLOAD_STATUS_LABEL[w.status as WorkloadStatus] ?? w.status} · <a href="/kiracilar/{w.tenantId}">kiracı</a></p>
+  {#snippet actions()}
     {#if w.lastRunId}<a href="/calistirmalar/{w.lastRunId}" class="vt-btn vt-btn-ghost vt-btn-sm">Son çalıştırma</a>{/if}
     <form method="POST" action="?/backup" use:enhance><Button type="submit" variant="soft" disabled={!data.policy}>Yedek al (şimdi)</Button></form>
     {#if w.blueprintSlug}<Button variant="danger" onclick={() => (destroyOpen = true)} disabled={w.status === 'destroyed' || w.status === 'decommissioning'}>İş yükünü yok et</Button>{/if}
-  </div>
-</div>
+  {/snippet}
+</PageHead>
 <Modal bind:open={destroyOpen} title="İş yükünü yok etmek istiyor musunuz?">
   <p style="margin:0">Yüksek riskli değişiklik: <span class="mono">tofu destroy</span>. Başarılı bir yedek kanıtı olmadan başlamaz; plan sonrası talep edenden farklı bir kıdemli operatör onaylar (dört-göz).</p>
   {#snippet actions()}<Button variant="ghost" onclick={() => (destroyOpen = false)}>Vazgeç</Button><form method="POST" action="?/destroy" use:enhance><Button variant="danger" type="submit">Yıkımı başlat</Button></form>{/snippet}

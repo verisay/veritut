@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { PageHead } from '@veritut/ui';
   let { data } = $props();
   const byLayer = $derived([2, 3, 4].map((l) => ({ layer: l, items: data.products.filter((p) => p.layer === l && p.published) })).filter((g) => g.items.length));
   const layerTitle: Record<number, string> = { 1: 'Zemin', 2: 'Yönetilen servisler', 3: 'Açık kaynak iş uygulamaları', 4: 'Danışmanlık' };
@@ -10,7 +11,7 @@
   <link rel="canonical" href="https://veritut.com/urunler" />
 </svelte:head>
 
-<h1 class="vt-h1">Ürünler</h1>
+<PageHead title="Ürünler" eyebrow="katalog" variant="marketing" />
 <p class="vt-lead" style="margin:6px 0 28px; max-width:680px">Her ürün aynı disiplinle kurulur: kod olarak provizyon, 3-2-1 yedek, aylık geri dönüş tatbikatı ve kanıt defteri.</p>
 
 {#each byLayer as g (g.layer)}

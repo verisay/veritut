@@ -13,11 +13,22 @@ import { notifyStaff } from './notification.service.js';
  * Sapma tespiti (plan §14 K4/5): gece `tofu plan` — elle yapılan değişikliği yakalar.
  * "Üretime elle müdahale yasak" kuralının denetçisi budur.
  */
-export async function scheduleDriftPlans(limit = 20): Promise<number> {
+export async function scheduleDriftPlans(limit = 20, only?: { workloadId?: string }): Promise<number> {
+  // `limit` bir PARTİ boyutudur, keyfi kesme değil: en uzun süredir taranmamış iş yükleri
+  // önce gelir (hiç taranmamışlar en başta). Sıralamasız kesme, iş yükü sayısı limitten
+  // çoksa çoğunu sessizce denetimsiz bırakıyordu — bu tarama "elle müdahale yasak"ın denetçisi.
+  const lastScan = sql`(SELECT max(dr.created_at) FROM drift_reports dr WHERE dr.workload_id = ${workloads.id})`;
   const rows = await db
     .select({ id: workloads.id, slug: workloads.slug, tenantId: workloads.tenantId, blueprint: workloads.blueprintSlug, version: workloads.blueprintVersion, region: workloads.region, size: workloads.size, residency: workloads.residency, provider: workloads.providerCode, accountId: workloads.providerAccountId })
     .from(workloads)
-    .where(and(sql`${workloads.status} IN ('active','degraded')`, sql`${workloads.blueprintSlug} IS NOT NULL`))
+    .where(
+      and(
+        sql`${workloads.status} IN ('active','degraded')`,
+        sql`${workloads.blueprintSlug} IS NOT NULL`,
+        ...(only?.workloadId ? [eq(workloads.id, only.workloadId)] : []),
+      ),
+    )
+    .orderBy(sql`${lastScan} ASC NULLS FIRST`, workloads.createdAt)
     .limit(limit);
   let n = 0;
   for (const w of rows) {

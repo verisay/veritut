@@ -1,16 +1,15 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, HashChip, Table, Button } from '@veritut/ui';
+  import { Button, Card, HashChip, PageHead, Table } from '@veritut/ui';
   import { EVIDENCE_KIND_LABEL, isEvidenceKind } from '@veritut/types';
   import { formatDateTime, shortHash } from '@veritut/shared';
   let { data } = $props();
   const d = $derived(data.data);
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; gap:16px">
-  <div><h1 class="vt-h1">Kanıt Defteri — platform</h1><p class="vt-lead" style="margin:4px 0 0">VERITUT'un kendi zinciri. Aylık çapa /guvence'de yayımlanır.</p></div>
-  <form method="POST" action="?/demo" use:enhance><Button type="submit" variant="secondary" size="sm">Demo kanıt ekle (dev)</Button></form>
-</div>
+<PageHead title="Kanıt Defteri — platform" variant="ops">
+  {#snippet actions()}<form method="POST" action="?/demo" use:enhance><Button type="submit" variant="secondary" size="sm">Demo kanıt ekle (dev)</Button></form>{/snippet}
+</PageHead>
 {#if d.verdict.checked > 0}
   <div style="margin-bottom:16px"><HashChip hash={d.verdict.lastHash ?? ''} broken={!d.verdict.ok} label={d.verdict.ok ? `zincir bütün · ${d.verdict.checked} olay` : `seq ${d.verdict.brokenAt}'de kopuk`} /></div>
 {/if}

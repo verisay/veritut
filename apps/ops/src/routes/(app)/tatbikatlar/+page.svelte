@@ -1,15 +1,14 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, StatusDot } from '@veritut/ui';
+  import { Button, Card, PageHead, StatusDot, Table } from '@veritut/ui';
   import { DRILL_STATUS_LABEL } from '@veritut/types';
   import { formatDate, formatDateTime, formatDuration } from '@veritut/shared';
   let { data, form } = $props();
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; gap:16px; flex-wrap:wrap">
-  <div><h1 class="vt-h1">Geri dönüş tatbikatları</h1><p class="vt-lead" style="margin:4px 0 0">"Yedekliyoruz" diyen çok, "geri döndüğünü kanıtlayan" az. Her tatbikat kanıt defterine düşer.</p></div>
-  <form method="POST" action="?/schedule" use:enhance><Button type="submit" variant="ghost" size="sm">Aylık planı oluştur</Button></form>
-</div>
+<PageHead title="Geri dönüş tatbikatları" variant="ops">
+  {#snippet actions()}<form method="POST" action="?/schedule" use:enhance><Button type="submit" variant="ghost" size="sm">Aylık planı oluştur</Button></form>{/snippet}
+</PageHead>
 {#if form?.message}<div class="vt-status" data-state="down" style="margin-bottom:12px">{form.message}</div>{/if}
 {#if form?.runId}<div class="vt-status" data-state="ok" style="margin-bottom:12px">Tatbikat başladı → <a href="/calistirmalar/{form.runId}">canlı log</a></div>{/if}
 {#if form?.scheduled}<div class="vt-status" data-state="ok" style="margin-bottom:12px">Planlandı: {JSON.stringify(form.scheduled)}</div>{/if}

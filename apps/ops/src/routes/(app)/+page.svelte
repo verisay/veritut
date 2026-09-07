@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { Card, StatusDot, Table } from '@veritut/ui';
+  import { Card, PageHead, StatusDot, Table } from '@veritut/ui';
   import { RUN_STATUS_LABEL, type RunStatus, type ComponentState } from '@veritut/types';
   import { formatRelative } from '@veritut/shared';
   let { data } = $props();
   const o = $derived(data.overview);
 </script>
 
-<h1 class="vt-h1" style="margin-bottom:20px">Genel bakış</h1>
+<PageHead title="Genel bakış" variant="ops" />
 <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px">
   <Card title="Platform bileşenleri" subtitle="worker probe · 30 sn">
     <div style="display:grid; gap:8px">
@@ -25,7 +25,10 @@
       {/each}
     </div>
   </Card>
-  <Card title="Kiracılar"><p class="vt-h1 tnum" style="margin:0">{o.tenantCount}</p><p class="vt-help" style="margin:4px 0 0">kayıtlı kiracı</p></Card>
+  <Card title="Kiracılar">
+    <p class="vt-stat-value tnum" style="font-size:clamp(36px,3.4vw,52px)">{o.tenantCount}</p>
+    <p class="vt-stat-label">kayıtlı kiracı · <a href="/kiracilar">listeye git</a></p>
+  </Card>
 </div>
 <div style="margin-top:14px">
   <Card title="Son çalıştırmalar" padded={false}>

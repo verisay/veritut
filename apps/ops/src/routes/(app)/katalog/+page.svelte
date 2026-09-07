@@ -1,6 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, ResidencyBadge } from '@veritut/ui';
+  import { Button, Card, PageHead, ResidencyBadge, Table } from '@veritut/ui';
   import { FEATURE_LABEL, type FeatureKey, type Residency } from '@veritut/types';
   let { data, form } = $props();
   let priceProduct = $state(data.products[0]?.slug ?? '');
@@ -9,7 +9,7 @@
   const prices = $derived(data.prices.filter((p) => p.productSlug === priceProduct));
 </script>
 
-<h1 class="vt-h1" style="margin-bottom:6px">Katalog</h1>
+<PageHead title="Katalog" variant="ops" />
 <p class="vt-lead" style="margin:0 0 20px">Ürün = satış birimi, blueprint = teknik tanım. Yayımlanan tek sürüm self-servise açılır.</p>
 {#if form?.message}<div class="vt-status" data-state="down" style="margin-bottom:12px">{form.message}</div>{/if}
 {#if form?.published}<div class="vt-status" data-state="ok" style="margin-bottom:12px">Sürüm yayımlandı.</div>{/if}

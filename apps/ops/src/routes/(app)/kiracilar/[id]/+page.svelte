@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { Card, Table, ResidencyBadge } from '@veritut/ui';
+  import { Card, PageHead, ResidencyBadge, Table } from '@veritut/ui';
   import { TENANT_ROLE_LABEL, WORKLOAD_STATUS_LABEL, type TenantRole, type WorkloadStatus } from '@veritut/types';
   import { formatDate, formatDateTime } from '@veritut/shared';
   let { data } = $props();
   const d = $derived(data.d);
 </script>
 
-<p class="vt-kicker"><a href="/kiracilar">Kiracılar</a> / {d.tenant.slug}</p>
-<h1 class="vt-h1" style="margin:4px 0 6px">{d.tenant.name} <ResidencyBadge residency={d.tenant.residencyDefault} /></h1>
-<p class="vt-help" style="margin:0 0 20px">{d.tenant.kind} · {d.tenant.status} · kayıt {formatDate(d.tenant.createdAt)} · durum sayfası <a href="https://vt-status.dev-fethi.entra.net/{d.tenant.slug}" rel="external">/{d.tenant.slug}</a></p>
+<PageHead title={d.tenant.name} eyebrow="kiracılar" variant="ops">
+  {#snippet badge()}<ResidencyBadge residency={d.tenant.residencyDefault} />{/snippet}
+  <p class="vt-help" style="margin:6px 0 0"><span class="mono">{d.tenant.slug}</span> · {d.tenant.kind} · {d.tenant.status} · kayıt {formatDate(d.tenant.createdAt)} · durum sayfası <a href="https://durum.veritut.com/{d.tenant.slug}" rel="external">/{d.tenant.slug}</a></p>
+</PageHead>
 <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:14px">
   <Card><p class="vt-kicker">İş yükü</p><p class="vt-h2 tnum">{d.workloads.length}</p></Card>
   <Card><p class="vt-kicker">Kanıt olayı</p><p class="vt-h2 tnum">{d.evidence.count}</p><p class="vt-help">{d.evidence.last ? `son: ${formatDateTime(d.evidence.last)}` : 'henüz yok'}</p></Card>

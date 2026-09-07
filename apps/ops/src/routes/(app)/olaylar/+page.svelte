@@ -1,19 +1,18 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, StatusDot } from '@veritut/ui';
+  import { Button, Card, PageHead, StatusDot, Table } from '@veritut/ui';
   import { INCIDENT_SEVERITY_LABEL, INCIDENT_STATUS_LABEL, INCIDENT_SEVERITIES, type IncidentSeverity, type IncidentStatus } from '@veritut/types';
   import { formatDateTime, formatRelative } from '@veritut/shared';
   let { data, form } = $props();
   const dot = (r: (typeof data.rows)[number]) => (r.incident.resolveBreached || r.incident.responseBreached ? 'down' : r.incident.status === 'resolved' || r.incident.status === 'postmortem_done' ? 'ok' : 'degraded');
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; gap:16px; flex-wrap:wrap">
-  <div><h1 class="vt-h1">Olaylar</h1><p class="vt-lead" style="margin:4px 0 0">SLA saati olay açıldığında başlar. Sev1/Sev2 post-mortem yazılmadan kapanmaz.</p></div>
-  <div style="display:flex; gap:8px">
+<PageHead title="Olaylar" variant="ops">
+  {#snippet actions()}<div style="display:flex; gap:8px">
     <a href="/olaylar" class="vt-btn vt-btn-sm {data.acik ? 'vt-btn-ghost' : 'vt-btn-secondary'}">Hepsi</a>
     <a href="/olaylar?acik=1" class="vt-btn vt-btn-sm {data.acik ? 'vt-btn-secondary' : 'vt-btn-ghost'}">Açık</a>
-  </div>
-</div>
+  </div>{/snippet}
+</PageHead>
 {#if form?.message}<div class="vt-status" data-state="down" style="margin-bottom:12px">{form.message}</div>{/if}
 
 <div style="display:grid; grid-template-columns:1fr 340px; gap:14px; align-items:start">

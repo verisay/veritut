@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, EmptyState, ResidencyBadge, Button, StatusDot, UptimeBars } from '@veritut/ui';
+  import { Button, Card, EmptyState, PageHead, ResidencyBadge, StatusDot, UptimeBars } from '@veritut/ui';
   import { RESIDENCIES, RESIDENCY_LABEL, WORKLOAD_STATUS_LABEL, type ComponentState, type WorkloadHealthCard, type WorkloadStatus } from '@veritut/types';
   import { formatNumber, formatPercent, formatRelative, formatMoney } from '@veritut/shared';
   let { data, form } = $props();
@@ -46,7 +46,7 @@
 </script>
 
 {#if !data.activeTenant}
-  <h1 class="vt-h1">Hoş geldiniz</h1>
+  <PageHead title="Hoş geldiniz" />
   <p class="vt-lead" style="margin:6px 0 24px; max-width:640px">Başlamak için bir kiracı (kurum hesabı) oluşturun. Verinizin varsayılan ikametgâhını burada seçersiniz; iş yükü başına değiştirebilirsiniz.</p>
   <Card title="Yeni kiracı" subtitle="Siz sahip (owner) olursunuz; ekip üyelerini sonra davet edersiniz">
     <form method="POST" action="?/createTenant" use:enhance style="display:grid; gap:16px; max-width:480px">

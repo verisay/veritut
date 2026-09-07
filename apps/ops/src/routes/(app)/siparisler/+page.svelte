@@ -1,13 +1,13 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, ResidencyBadge } from '@veritut/ui';
+  import { Button, Card, PageHead, ResidencyBadge, Table } from '@veritut/ui';
   import { ORDER_STATUS_LABEL_TR, type Residency } from '@veritut/types';
   import { formatDateTime, formatMoney } from '@veritut/shared';
   let { data, form } = $props();
   let open = $state<string | null>(null);
 </script>
 
-<h1 class="vt-h1" style="margin-bottom:6px">Siparişler</h1>
+<PageHead title="Siparişler" variant="ops" />
 <p class="vt-lead" style="margin:0 0 20px">Self-servis siparişler insan dokunmadan kurulur. Buradaki müdahale istisnadır.</p>
 {#if form?.message}<div class="vt-status" data-state="down" style="margin-bottom:12px">{form.message}</div>{/if}
 <Card padded={false}>

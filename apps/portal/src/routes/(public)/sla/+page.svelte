@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card } from '@veritut/ui';
+  import { Card, PageHead } from '@veritut/ui';
   let { data } = $props();
 </script>
 
@@ -10,7 +10,7 @@
 </svelte:head>
 
 <article style="max-width:760px">
-  <h1 class="vt-h1">Hizmet seviyesi taahhüdü</h1>
+  <PageHead title="Hizmet seviyesi taahhüdü" eyebrow="güvence" variant="marketing" />
   <p class="vt-lead" style="margin:6px 0 24px">Söz verdiğimiz süreleri ölçer, aylık raporlar ve hedefin altında kalırsak krediyi kendimiz hesaplarız.</p>
 
   <Card padded={false}>

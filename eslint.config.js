@@ -43,7 +43,7 @@ export default ts.config(
   },
   {
     // CLI script'leri ve migration/seed runner'ları: console ÇIKTI ARACIDIR.
-    files: ['**/scripts/**', '**/db/migrate.ts', '**/db/seed.ts', 'tools/**', 'infra/blueprints/**/checks/**'],
+    files: ['**/scripts/**', '**/db/migrate.ts', '**/db/seed*.ts', 'tools/**', 'infra/blueprints/**/checks/**'],
     rules: { 'no-console': 'off' },
   },
   {

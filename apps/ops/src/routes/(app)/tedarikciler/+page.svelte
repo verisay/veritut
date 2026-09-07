@@ -1,15 +1,15 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, StatusDot, ResidencyBadge } from '@veritut/ui';
+  import { Button, Card, PageHead, ResidencyBadge, StatusDot, Table } from '@veritut/ui';
   import { PROVIDERS, RESIDENCIES, type ComponentState, type Residency } from '@veritut/types';
   import { formatRelative } from '@veritut/shared';
   let { data, form } = $props();
   const d = $derived(data.data);
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; gap:16px">
-  <div><h1 class="vt-h1">Tedarikçi hesapları</h1><p class="vt-lead" style="margin:4px 0 0">Kimlik bilgileri mühürlü saklanır; yalnız runner açar. Her tedarikçide en az iki hesap.</p></div>
-</div>
+<PageHead title="Tedarikçi hesapları" variant="ops">
+  {#snippet actions()}{/snippet}
+</PageHead>
 {#if d.singleAccountProviders.length}
   <div class="vt-status" data-state="degraded" style="margin-bottom:14px">Tek hesaplı tedarikçi: {d.singleAccountProviders.join(', ')} — askıya alınma riski, ikinci hesap açın.</div>
 {/if}

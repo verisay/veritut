@@ -1,18 +1,17 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button } from '@veritut/ui';
+  import { Button, Card, PageHead, Table } from '@veritut/ui';
   import { formatDateTime } from '@veritut/shared';
   let { data, form } = $props();
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; gap:16px; flex-wrap:wrap">
-  <div><h1 class="vt-h1">Yapılandırma sapmaları</h1><p class="vt-lead" style="margin:4px 0 0">Gece taraması. "Üretime elle müdahale yasak" kuralının denetçisi budur.</p></div>
-  <div style="display:flex; gap:8px">
+<PageHead title="Yapılandırma sapmaları" variant="ops">
+  {#snippet actions()}<div style="display:flex; gap:8px">
     <a href="/sapmalar" class="vt-btn vt-btn-sm {data.yeni ? 'vt-btn-ghost' : 'vt-btn-secondary'}">Hepsi</a>
     <a href="/sapmalar?yeni=1" class="vt-btn vt-btn-sm {data.yeni ? 'vt-btn-secondary' : 'vt-btn-ghost'}">Onay bekleyen</a>
     <form method="POST" action="?/scan" use:enhance><Button type="submit" size="sm" variant="ghost">Şimdi tara</Button></form>
-  </div>
-</div>
+  </div>{/snippet}
+</PageHead>
 {#if form?.scan}<div class="vt-status" data-state="ok" style="margin-bottom:12px">Tarama kuyruğa verildi: {JSON.stringify(form.scan)}</div>{/if}
 
 <Card padded={false}>

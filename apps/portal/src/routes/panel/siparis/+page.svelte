@@ -1,6 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Button, ResidencyBadge } from '@veritut/ui';
+  import { Button, Card, PageHead, ResidencyBadge } from '@veritut/ui';
   import { formatMoney } from '@veritut/shared';
   let { data, form } = $props();
   const d = $derived(data.detail);
@@ -24,7 +24,7 @@
 </script>
 
 <svelte:head><title>Yeni iş yükü — VERITUT</title></svelte:head>
-<h1 class="vt-h1">Yeni iş yükü</h1>
+<PageHead title="Yeni iş yükü" />
 <p class="vt-lead" style="margin:6px 0 24px">Ürün, ikametgâh ve plan seçin. Onaydan sonra kurulum insan dokunmadan başlar; her adım kanıt defterinize düşer.</p>
 
 {#if !data.activeTenant}

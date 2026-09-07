@@ -5,7 +5,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { createHmac } from 'node:crypto';
-import { API, OPS, PORTAL, ok, jar, go, oidcLogin, done, json, waitRun, sleep } from './_smoke-common.mjs';
+import { API, OPS, PORTAL, ok, jar, go, oidcLogin, done, json, waitRun } from './_smoke-common.mjs';
 
 const envFile = (() => { try { return Object.fromEntries(readFileSync(new URL('../../../infra/.env', import.meta.url), 'utf8').split('\n').filter((l) => l.includes('=') && !l.startsWith('#')).map((l) => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1)])); } catch { return {}; } })();
 const S3_KEY = envFile.S3_ACCESS_KEY ?? 'veritut-dev', S3_SECRET = envFile.S3_SECRET_KEY ?? '';
@@ -49,7 +49,7 @@ await oidcLogin(OPS, 'ops', 'ops@veritut.local', 'ops-dev-parola');
   ok('operator plan değiştiremez 403 (platform_admin şart)', (await go(`${OPS}/api/v1/ops/catalog/plans`, { ...json({ code: 'x', title: 'X' }), method: 'PUT' })).status !== 403 || true);
 }
 // Mock tedarikçi hesabı + yedek depoları (provizyon ve otomatik yedek politikası için)
-const acc = await (await go(`${OPS}/api/v1/ops/provider-accounts`, json({ providerCode: 'mock', label: `mock-k3-${ts}`, credentials: { seed: ts }, regions: ['tr-ist', 'eu-fra'], residencies: ['TR', 'EU'] }))).json();
+await go(`${OPS}/api/v1/ops/provider-accounts`, json({ providerCode: 'mock', label: `mock-k3-${ts}`, credentials: { seed: ts }, regions: ['tr-ist', 'eu-fra'], residencies: ['TR', 'EU'] }));
 await go(`${OPS}/api/v1/ops/backup-repos`, json({ label: `k3-tr-${ts}`, providerCode: 'mock', repoUrl: `s3:http://veritut-minio:9000/veritut-backups/k3-${ts}-a`, residency: 'TR', credentials: { RESTIC_PASSWORD: `p-${ts}`, AWS_ACCESS_KEY_ID: S3_KEY, AWS_SECRET_ACCESS_KEY: S3_SECRET } }));
 await go(`${OPS}/api/v1/ops/backup-repos`, json({ label: `k3-tr2-${ts}`, providerCode: 'hetzner', repoUrl: `s3:http://veritut-minio:9000/veritut-backups/k3-${ts}-b`, residency: 'TR', credentials: { RESTIC_PASSWORD: `p-${ts}`, AWS_ACCESS_KEY_ID: S3_KEY, AWS_SECRET_ACCESS_KEY: S3_SECRET } }));
 

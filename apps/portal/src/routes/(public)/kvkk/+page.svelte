@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { PageHead } from '@veritut/ui';
+</script>
+
 <svelte:head>
   <title>KVKK aydınlatma metni — VERITUT</title>
   <meta name="description" content="Kişisel verilerin işlenmesi, veri ikametgâhı, alt işleyenler, saklama süreleri ve haklarınız." />
@@ -6,7 +10,7 @@
 
 <article style="max-width:760px">
   <div class="vt-status" data-state="degraded" style="margin-bottom:20px">TASLAK — hukuk incelemesi tamamlanmadan yayına alınmaz.</div>
-  <h1 class="vt-h1">KVKK aydınlatma metni</h1>
+  <PageHead title="KVKK aydınlatma metni" eyebrow="hukuk" variant="marketing" />
   <p class="vt-lead" style="margin:6px 0 24px">Veri sorumlusu: Verisay İletişim ve Bilgi Teknolojileri Ltd. Şti. (VERITUT markası).</p>
 
   <h2 class="vt-h2" style="margin:28px 0 8px">Hangi verileri işliyoruz</h2>

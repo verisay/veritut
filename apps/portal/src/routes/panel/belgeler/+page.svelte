@@ -1,6 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button } from '@veritut/ui';
+  import { Button, Card, PageHead, Table } from '@veritut/ui';
   import { DOCUMENT_KIND_LABEL, type DocumentKind } from '@veritut/types';
   import { formatDateTime } from '@veritut/shared';
   let { data, form } = $props();
@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head><title>Belgeler — VERITUT</title></svelte:head>
-<h1 class="vt-h1" style="margin-bottom:6px">Belgeler</h1>
+<PageHead title="Belgeler" />
 <p class="vt-lead" style="margin:0 0 24px">Denetimde "belgeyi kim verecek" sorusunun cevabı. Hepsi verinizden üretilir; elle doldurulan alan yok.</p>
 {#if form?.message}<div class="vt-status" data-state="down" style="margin-bottom:14px">{form.message}</div>{/if}
 {#if form?.generated}<div class="vt-status" data-state="ok" style="margin-bottom:14px">Belge üretildi.</div>{/if}

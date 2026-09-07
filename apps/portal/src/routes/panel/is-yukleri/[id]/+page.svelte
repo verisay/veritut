@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card, Table, ResidencyBadge, StatusDot, Tabs } from '@veritut/ui';
+  import { Card, PageHead, ResidencyBadge, StatusDot, Table, Tabs } from '@veritut/ui';
   import { WORKLOAD_STATUS_LABEL, type WorkloadStatus } from '@veritut/types';
   import { formatDateTime, formatDuration } from '@veritut/shared';
   let { data } = $props();
@@ -8,9 +8,10 @@
 </script>
 
 <svelte:head><title>{w.name} — VERITUT</title></svelte:head>
-<p class="vt-kicker"><a href="/panel">İş yükleri</a> / {w.slug}</p>
-<h1 class="vt-h1" style="margin:4px 0 6px">{w.name} <ResidencyBadge residency={w.residency} /></h1>
-<p class="vt-help" style="margin:0 0 20px">{w.productSlug} · {w.providerCode ?? '—'}{w.region ? `/${w.region}` : ''}{w.size ? ` · ${w.size}` : ''} · SLA <span class="mono">{w.slaTier}</span> · {WORKLOAD_STATUS_LABEL[w.status as WorkloadStatus] ?? w.status}</p>
+<PageHead title={w.name} eyebrow="iş yükleri">
+  {#snippet badge()}<ResidencyBadge residency={w.residency} />{/snippet}
+  <p class="vt-help" style="margin:6px 0 0"><span class="mono">{w.slug}</span> · {w.productSlug} · {w.providerCode ?? '—'}{w.region ? `/${w.region}` : ''}{w.size ? ` · ${w.size}` : ''} · SLA <span class="mono">{w.slaTier}</span> · {WORKLOAD_STATUS_LABEL[w.status as WorkloadStatus] ?? w.status}</p>
+</PageHead>
 
 <Tabs tabs={[{ id: 'genel', label: 'Genel' }, { id: 'yedek', label: `Yedekler (${data.backups.length})` }, { id: 'erisim', label: `Erişim (${data.accessSessions.length})` }]} bind:active={tab} />
 <div style="margin-top:18px">

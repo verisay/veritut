@@ -1,13 +1,13 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, StatusDot } from '@veritut/ui';
+  import { Button, Card, PageHead, StatusDot, Table } from '@veritut/ui';
   import { CHANNEL_EVENTS, CHANNEL_EVENT_LABEL, CHANNEL_KINDS, CHANNEL_KIND_LABEL, DRILL_STATUS_LABEL, type ChannelKind } from '@veritut/types';
   import { formatDate, formatDateTime, formatDuration, formatMoney } from '@veritut/shared';
   let { data, form } = $props();
 </script>
 
 <svelte:head><title>Güvence — VERITUT</title></svelte:head>
-<h1 class="vt-h1" style="margin-bottom:6px">Güvence</h1>
+<PageHead title="Güvence" />
 <p class="vt-lead" style="margin:0 0 24px">Hizmet seviyesi ölçümleri, geri dönüş tatbikatları, alarm kanallarınız ve denetçi erişimi.</p>
 {#if form?.message}<div class="vt-status" data-state="down" style="margin-bottom:14px">{form.message}</div>{/if}
 {#if form?.link}<Card title="Denetçi bağlantısı oluşturuldu" subtitle="Bu adresi denetçinizle paylaşın; kimlik istemez, süresi dolunca kapanır."><div class="vt-codebox" style="user-select:all">{form.link.url}</div></Card>{/if}

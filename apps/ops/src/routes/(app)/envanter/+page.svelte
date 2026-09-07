@@ -1,6 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, ResidencyBadge } from '@veritut/ui';
+  import { Button, Card, PageHead, ResidencyBadge, Table } from '@veritut/ui';
   import type { Residency } from '@veritut/types';
   import { formatRelative } from '@veritut/shared';
   let { data, form } = $props();
@@ -9,13 +9,12 @@
   const unmatched = $derived(data.items.filter((i) => !i.matchedWorkloadId));
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; gap:16px">
-  <div><h1 class="vt-h1">Tedarikçi envanteri</h1><p class="vt-lead" style="margin:4px 0 0">Sahipsiz kaynak = marj sızıntısı. Eşleyin veya iş yükü oluşturun.</p></div>
-  <div style="display:flex; gap:8px">
+<PageHead title="Tedarikçi envanteri" variant="ops">
+  {#snippet actions()}<div style="display:flex; gap:8px">
     <a href="/envanter" class="vt-btn vt-btn-sm {data.unmatchedOnly ? 'vt-btn-ghost' : 'vt-btn-secondary'}">Hepsi</a>
     <a href="/envanter?sahipsiz=1" class="vt-btn vt-btn-sm {data.unmatchedOnly ? 'vt-btn-secondary' : 'vt-btn-ghost'}">Sahipsiz ({unmatched.length})</a>
-  </div>
-</div>
+  </div>{/snippet}
+</PageHead>
 <p class="vt-help tnum" style="margin:0 0 12px">{data.items.length} kaynak · aylık tahmin {total.toFixed(2)} EUR · sahipsiz {unmatched.reduce((s, i) => s + Number(i.monthlyCostEstimate ?? 0), 0).toFixed(2)} EUR</p>
 {#if form?.message}<p class="vt-field-error" style="margin-bottom:10px">{form.message}</p>{/if}
 <Card padded={false}>

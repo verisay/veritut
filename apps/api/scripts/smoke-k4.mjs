@@ -93,11 +93,16 @@ ok('restore.drill.passed zincirde, zincir bütün', pv2.ok && pv2.checked > pv1.
 
 // ── 5. Sapma taraması (elle müdahale denetçisi) ───────────────────────────
 {
-  const scan = await go(`${OPS}/api/v1/ops/drift/scan`, json({}));
+  const scan = await go(`${OPS}/api/v1/ops/drift/scan`, json({ workloadId: wid }));
   ok('sapma taraması kuyruğa verildi', scan.status === 200);
-  await sleep(1500);
-  const runs = await (await go(`${OPS}/api/v1/ops/runs`)).json();
-  const driftRun = runs.find((r) => r.kind === 'drift-plan' && r.workloadId === wid);
+  // Tarama her aktif iş yükü için bir run açar; süzgeçsiz liste penceresi
+  // (en yeni N satır) kalabalık kurulumda aranan run'ı dışarıda bırakabiliyordu.
+  let driftRun = null;
+  for (let i = 0; i < 10 && !driftRun; i++) {
+    await sleep(1000);
+    const runs = await (await go(`${OPS}/api/v1/ops/runs?kind=drift-plan&workloadId=${wid}`)).json();
+    driftRun = runs[0] ?? null;
+  }
   ok('drift-plan çalıştırması açıldı', Boolean(driftRun));
   const dr = driftRun ? await waitRun(OPS, driftRun.id, 180) : null;
   ok('drift-plan → succeeded (yalnız plan, apply yok)', dr?.run.status === 'succeeded', dr?.run.status);

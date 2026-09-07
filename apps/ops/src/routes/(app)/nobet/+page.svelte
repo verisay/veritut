@@ -1,12 +1,12 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button } from '@veritut/ui';
+  import { Button, Card, PageHead, Table } from '@veritut/ui';
   import { formatDateTime } from '@veritut/shared';
   let { data, form } = $props();
   const staffList = $derived([...new Map(data.shifts.map((s) => [s.staffId, { id: s.staffId, name: s.name, email: s.email }])).values()]);
 </script>
 
-<h1 class="vt-h1" style="margin-bottom:6px">Nöbet ve bakım</h1>
+<PageHead title="Nöbet ve bakım" variant="ops" />
 <p class="vt-lead" style="margin:0 0 20px">Nöbetçi atanmamışsa eskalasyon tüm operatörlere düşer — sistem sessiz kalmaz.</p>
 {#if form?.message}<div class="vt-status" data-state="down" style="margin-bottom:12px">{form.message}</div>{/if}
 

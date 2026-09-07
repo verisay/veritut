@@ -1,20 +1,19 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button } from '@veritut/ui';
+  import { Button, Card, PageHead, Table } from '@veritut/ui';
   import { formatDateTime } from '@veritut/shared';
   let { data, form } = $props();
   const latest = $derived(data.snapshots[0] ?? null);
   const num = (v: string | null) => (v === null ? '—' : Number(v).toLocaleString('tr-TR'));
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; gap:16px; flex-wrap:wrap">
-  <div><h1 class="vt-h1">KPI</h1><p class="vt-lead" style="margin:4px 0 0">Modelin sağlığı: MRR, brüt marj, destek dakikası, churn. Arbitraj tuzağının erken uyarısı marjdır.</p></div>
-  <div style="display:flex; gap:8px">
+<PageHead title="KPI" variant="ops">
+  {#snippet actions()}<div style="display:flex; gap:8px">
     <form method="POST" action="?/compute" use:enhance><Button type="submit" size="sm" variant="secondary">Şimdi hesapla</Button></form>
     <form method="POST" action="?/push" use:enhance><Button type="submit" size="sm" variant="ghost">Dönemi faturala</Button></form>
     <form method="POST" action="?/trials" use:enhance><Button type="submit" size="sm" variant="ghost">Denemeleri kapat</Button></form>
-  </div>
-</div>
+  </div>{/snippet}
+</PageHead>
 {#if form?.push}<div class="vt-status" data-state="ok" style="margin-bottom:12px">Faturalama: {JSON.stringify(form.push)}</div>{/if}
 {#if form?.trials}<div class="vt-status" data-state="ok" style="margin-bottom:12px">Deneme kapanışı: {JSON.stringify(form.trials)}</div>{/if}
 

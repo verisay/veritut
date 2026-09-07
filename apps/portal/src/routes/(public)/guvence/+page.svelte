@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Card, HashChip } from '@veritut/ui';
+  import { Card, HashChip, PageHead } from '@veritut/ui';
   let { data } = $props();
 </script>
 
 <svelte:head><title>Güvence — VERITUT</title></svelte:head>
 
-<h1 class="vt-h1">Güvence</h1>
+<PageHead title="Güvence" variant="marketing" />
 <p class="vt-lead" style="margin:6px 0 28px; max-width:720px">
   Her yedek, her geri dönüş tatbikatı, her yama, her personel erişimi Kanıt Defteri'ne düşer. Kayıtlar hash zinciriyle
   bağlıdır; biri değiştirilirse zincir kopar ve bunu gizlemeyiz. Aylık çapa hash'i burada yayımlanır.

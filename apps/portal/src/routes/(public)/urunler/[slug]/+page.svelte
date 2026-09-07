@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card, ResidencyBadge } from '@veritut/ui';
+  import { Card, PageHead, ResidencyBadge } from '@veritut/ui';
   let { data } = $props();
   const p = $derived(data.product);
   const cheapest = $derived(data.prices.length ? data.prices.reduce((a, b) => (a.monthly <= b.monthly ? a : b)) : null);
@@ -40,7 +40,7 @@
 
 <article style="max-width:760px">
   <p class="vt-kicker"><a href="/urunler">Ürünler</a> · katman {p.layer}</p>
-  <h1 class="vt-h1" style="margin:6px 0 8px">{p.title}</h1>
+  <PageHead title={p.title} eyebrow="yönetilen uygulamalar" variant="marketing" />
   <p class="vt-lead" style="margin:0 0 20px">{p.summary}</p>
   <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:24px">
     {#each data.residencies as r (r)}<ResidencyBadge residency={r} />{/each}

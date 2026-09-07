@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card, Table, HashChip } from '@veritut/ui';
+  import { Card, HashChip, PageHead, Table } from '@veritut/ui';
   import { DOCUMENT_KIND_LABEL, type DocumentKind } from '@veritut/types';
   import { formatDateTime } from '@veritut/shared';
   let { data } = $props();
@@ -10,7 +10,7 @@
 
 <div style="max-width:900px; margin:0 auto; padding:40px 20px">
   <p class="vt-kicker">VERITUT · denetçi görünümü</p>
-  <h1 class="vt-h1" style="margin:6px 0 4px">{v.tenant.name}</h1>
+  <PageHead title={v.tenant.name} />
   <p class="vt-lead" style="margin:0 0 24px">{v.label} · salt-okuma · kapsam: {v.scope.join(', ')}</p>
 
   {#if v.chain}

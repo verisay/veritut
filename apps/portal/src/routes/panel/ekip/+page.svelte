@@ -1,14 +1,14 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button } from '@veritut/ui';
+  import { Button, Card, PageHead, Table } from '@veritut/ui';
   import { TENANT_ROLES, TENANT_ROLE_LABEL, type TenantRole } from '@veritut/types';
   import { formatDate } from '@veritut/shared';
   let { data, form } = $props();
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px">
-  <div><h1 class="vt-h1">Ekip</h1><p class="vt-lead" style="margin:4px 0 0">Roller: sahip, yönetici, teknik, mali, salt okuma.</p></div>
-</div>
+<PageHead title="Ekip">
+  {#snippet actions()}{/snippet}
+</PageHead>
 {#if form?.message}<div class="vt-status" data-state="down" style="margin-bottom:12px">{form.message}</div>{/if}
 {#if form?.invited}<div class="vt-status" data-state="ok" style="margin-bottom:12px">Davet gönderildi. {#if form.devToken}<span class="vt-help">(dev) bağlantı: <a href="/panel/davet/{form.devToken}" class="mono">/panel/davet/…</a></span>{/if}</div>{/if}
 <div style="display:grid; grid-template-columns:1fr {data.canManage ? '340px' : ''}; gap:14px; align-items:start">

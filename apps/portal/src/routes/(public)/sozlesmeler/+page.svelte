@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card } from '@veritut/ui';
+  import { Card, PageHead } from '@veritut/ui';
 </script>
 
 <svelte:head>
@@ -8,7 +8,7 @@
   <link rel="canonical" href="https://veritut.com/sozlesmeler" />
 </svelte:head>
 
-<h1 class="vt-h1">Sözleşmeler</h1>
+<PageHead title="Sözleşmeler" eyebrow="hukuk" variant="marketing" />
 <p class="vt-lead" style="margin:6px 0 24px; max-width:720px">"Yönetilen" kelimesinin neyi içerdiği ve neyi içermediği burada madde madde yazılıdır.</p>
 <div class="vt-status" data-state="degraded" style="margin-bottom:20px">TASLAK — hukuk incelemesi sürüyor. Bağlayıcı metinler imzalı sözleşmenizdir.</div>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card } from '@veritut/ui';
+  import { Card, PageHead } from '@veritut/ui';
 </script>
 
 <svelte:head>
@@ -9,7 +9,7 @@
 </svelte:head>
 
 <article style="max-width:760px">
-  <h1 class="vt-h1">Geliştirici</h1>
+  <PageHead title="Geliştirici" variant="marketing" />
   <p class="vt-lead" style="margin:6px 0 24px">Ajanslar için: müşterinizin iş yükünü API ile kurun, sağlığını ve kanıt zincirini kendi panelinize taşıyın.</p>
 
   <Card title="Kimlik doğrulama">

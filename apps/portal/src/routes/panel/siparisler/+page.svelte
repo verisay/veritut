@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { Card, Table, ResidencyBadge, Button, EmptyState } from '@veritut/ui';
+  import { Button, Card, EmptyState, PageHead, ResidencyBadge, Table } from '@veritut/ui';
   import { ORDER_STATUS_LABEL_TR, type Residency } from '@veritut/types';
   import { formatDateTime, formatMoney } from '@veritut/shared';
   let { data } = $props();
 </script>
 
 <svelte:head><title>Siparişler — VERITUT</title></svelte:head>
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; gap:16px">
-  <div><h1 class="vt-h1">Siparişler</h1><p class="vt-lead" style="margin:4px 0 0">Sipariş anındaki fiyat sözleşmedir.</p></div>
-  <Button href="/panel/siparis">Yeni iş yükü</Button>
-</div>
+<PageHead title="Siparişler">
+  {#snippet actions()}<Button href="/panel/siparis">Yeni iş yükü</Button>{/snippet}
+</PageHead>
 {#if data.orders.length === 0}
   <EmptyState title="Henüz sipariş yok" text="Katalogdan bir ürün seçip birkaç dakikada kurabilirsiniz." />
 {:else}

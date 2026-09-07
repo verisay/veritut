@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card } from '@veritut/ui';
+  import { Card, PageHead } from '@veritut/ui';
   import { INCIDENT_SEVERITY_LABEL, INCIDENT_STATUS_LABEL, type IncidentSeverity, type IncidentStatus } from '@veritut/types';
   import { formatDateTime } from '@veritut/shared';
   let { data } = $props();
@@ -8,7 +8,7 @@
 
 <svelte:head><title>{i.title} — VERITUT</title></svelte:head>
 <p class="vt-kicker"><a href="/panel/olaylar">Olaylar</a> / #{i.number}</p>
-<h1 class="vt-h1" style="margin:4px 0 6px">{i.title}</h1>
+<PageHead title={i.title} eyebrow="olaylar" />
 <p class="vt-help" style="margin:0 0 20px">{INCIDENT_SEVERITY_LABEL[i.severity as IncidentSeverity]} · {INCIDENT_STATUS_LABEL[i.status as IncidentStatus]} · açılış {formatDateTime(i.createdAt)}{#if i.resolvedAt} · çözüm {formatDateTime(i.resolvedAt)}{/if}</p>
 
 <div style="max-width:760px; display:grid; gap:10px">

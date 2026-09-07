@@ -1,15 +1,14 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button } from '@veritut/ui';
+  import { Button, Card, PageHead, Table } from '@veritut/ui';
   import { RUN_STATUS_LABEL, type RunStatus } from '@veritut/types';
   import { formatDateTime } from '@veritut/shared';
   let { data } = $props();
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; gap:16px">
-  <div><h1 class="vt-h1">Çalıştırmalar</h1><p class="vt-lead" style="margin:4px 0 0">Her üretim mutasyonu bir çalıştırmadır; canlı log ve adım raporu.</p></div>
-  <form method="POST" action="?/echo" use:enhance><Button type="submit" variant="soft">Echo çalıştırması başlat</Button></form>
-</div>
+<PageHead title="Çalıştırmalar" variant="ops">
+  {#snippet actions()}<form method="POST" action="?/echo" use:enhance><Button type="submit" variant="soft">Echo çalıştırması başlat</Button></form>{/snippet}
+</PageHead>
 <Card padded={false}>
   <Table>
     {#snippet head()}<th>Çalıştırma</th><th>Tür</th><th>Risk</th><th>Durum</th><th>Başlangıç</th><th class="num">Çıkış</th>{/snippet}

@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { Card, Table, StatusDot, EmptyState } from '@veritut/ui';
+  import { Card, EmptyState, PageHead, StatusDot, Table } from '@veritut/ui';
   import { INCIDENT_SEVERITY_LABEL, INCIDENT_STATUS_LABEL, type IncidentSeverity, type IncidentStatus } from '@veritut/types';
   import { formatDateTime } from '@veritut/shared';
   let { data } = $props();
 </script>
 
 <svelte:head><title>Olaylar — VERITUT</title></svelte:head>
-<h1 class="vt-h1" style="margin-bottom:6px">Olaylar</h1>
+<PageHead title="Olaylar" />
 <p class="vt-lead" style="margin:0 0 24px">Hizmetinizi etkileyen olaylar ve çözüm kayıtları. Kapattığımız her olay kanıt defterinize düşer.</p>
 {#if data.incidents.length === 0}
   <EmptyState title="Açık veya geçmiş olay yok" text="Hizmetinizi etkileyen bir olay olduğunda burada ve alarm kanallarınızda görünür." />

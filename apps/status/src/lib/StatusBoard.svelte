@@ -34,7 +34,7 @@
     </div>
   </div>
 {:else}
-  <h1 class="vt-h1" style="position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%)">{title}</h1>
+  <h1 class="vt-sr-only">{title}</h1>
 
   <div class="vt-banner" data-state={snapshot.overall} style="padding:22px 24px; gap:14px">
     <StatusDot state={snapshot.overall} />

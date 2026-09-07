@@ -1,17 +1,16 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button } from '@veritut/ui';
+  import { Button, Card, PageHead, Table } from '@veritut/ui';
   import { formatMoney } from '@veritut/shared';
   let { data, form } = $props();
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; gap:16px; flex-wrap:wrap">
-  <div><h1 class="vt-h1">SLA — {data.period}</h1><p class="vt-lead" style="margin:4px 0 0">Uptime sondalardan, planlı bakım düşülerek. Kredi talep beklemeden hesaplanır ve faturaya düşer.</p></div>
-  <form method="POST" action="?/compute" use:enhance style="display:flex; gap:8px; align-items:end">
+<PageHead title="SLA — {data.period}" variant="ops">
+  {#snippet actions()}<form method="POST" action="?/compute" use:enhance style="display:flex; gap:8px; align-items:end">
     <div><label class="vt-label" for="period">Dönem</label><input class="vt-input mono" id="period" name="period" value={data.period} /></div>
     <Button type="submit" size="sm" variant="secondary">Hesapla ve kredileri işle</Button>
-  </form>
-</div>
+  </form>{/snippet}
+</PageHead>
 {#if form?.result}<div class="vt-status" data-state="ok" style="margin-bottom:12px">{JSON.stringify(form.result)}</div>{/if}
 
 <Card padded={false}>

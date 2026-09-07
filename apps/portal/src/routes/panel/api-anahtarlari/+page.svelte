@@ -1,13 +1,13 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, EmptyState } from '@veritut/ui';
+  import { Button, Card, EmptyState, PageHead, Table } from '@veritut/ui';
   import { formatDate, formatRelative } from '@veritut/shared';
   let { data, form } = $props();
   const scopes = ['workloads:read', 'evidence:read', 'orders:read', 'orders:write', 'status:read'];
 </script>
 
 <svelte:head><title>API anahtarları — VERITUT</title></svelte:head>
-<h1 class="vt-h1" style="margin-bottom:6px">API anahtarları</h1>
+<PageHead title="API anahtarları" />
 <p class="vt-lead" style="margin:0 0 24px">İş yüklerinizi ve kanıt defterinizi kendi sisteminize taşıyın. <a href="/gelistirici">Belgeler</a></p>
 
 {#if !data.canManage}

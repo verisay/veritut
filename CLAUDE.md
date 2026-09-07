@@ -70,6 +70,7 @@ uyumluluk paketi · otomatik alt işleyen listesi). Bir modül bu üçünden bir
 - **Biçim:** köşe 10 (buton/input) / 14 (kart/modal) / 6 (çip) px; geçiş 150 ms; **gölge yok, glow yok, illüstrasyon yok, emoji yok**. İkon Heroicons outline inline SVG.
 - **Yoğunluk:** portal ferah; ops veri-yoğun, tablo satırı 36 px, gövde 13 px, **varsayılan koyu** (`data-default-theme="dark"`).
 - **Kanıt dili:** hash mono + kopyala (`HashChip`); kırık zincir kırmızı gösterilir, gizlenmez.
+- **Sayfa başlığı:** her sayfa `PageHead` kullanır (eyebrow · başlık · açıklama · rozet · eylemler); yoğunluk `variant="marketing|panel|ops"` ile gelir. Elle `<h1>` yazılmaz.
 - **Yüzey ayrımı:** pazarlama (`(public)`) **her zaman koyu** — `.vt-onyx` koyu paleti temadan bağımsız uygular, gradient yok; portal ve ops temalı ve **üst nav** kullanır (`.vt-topnav`), kenar çubuğu yok. Sapmalar `docs/kararlar.md` #42–#46.
 - **Dil:** cümle düzeni; 1. çoğul ("yedeği doğruladık", "hata yaptık, düzelttik"); ünlem nadir; "devrim/muhteşem" yasak; belirsizlik gizlenmez ("Doğrulama bekliyor").
 
@@ -136,7 +137,7 @@ Status ayrı tedarikçide DEĞİL ve yedekler aynı makinede — `docs/kalan-isl
 4. **`.svelte.ts` uzantısı olmadan rune kullanımı compile error**; rune store'lar `@veritut/shared/stores/<ad>.svelte` yolundan import edilir, `index.ts`'ten re-export edilmez.
 5. **`ssr.noExternal: [/^@veritut\//]`** her SvelteKit app'te ZORUNLU (workspace paketleri kaynak TS).
 6. **SSR fetch İÇ ağdan:** `$lib/server/api.ts` → `API_URL` (http://veritut-api:4400); dış host'a hairpin çalışmaz. Tarayıcı çerezi `cookie` ile elle iletilir.
-7. **Traefik ağı filo geneli paylaşımlı — çıplak `api`/`portal` adı BAŞKA projenin container'ına çözülebilir** (ölçüldü: ops `http://api:4400` → CarRentall API). İç URL'lerde her zaman proje-özel alias: `veritut-api`, `veritut-keycloak`, `veritut-portal` (compose `networks.proj.aliases`).
+7. **Traefik ağı filo geneli paylaşımlı — çıplak `api`/`portal`/`minio` adı BAŞKA projenin container'ına çözülebilir** (ölçüldü: ops `http://api:4400` → CarRentall API; `S3_ENDPOINT=http://minio:9000` → `minio` iki IP'ye çözüldü, belge yazımı aralıklı `InvalidAccessKeyId` verdi). İç URL'lerde her zaman proje-özel alias: `veritut-api`, `veritut-keycloak`, `veritut-portal`, `veritut-minio` (compose `networks.proj.aliases`). Yalnız `traefik` ağına bağlı servisler çakışır; `postgres`/`redis` sadece `proj` ağında olduğu için güvenli.
 8. **Status app'in Redis kullanıcısı `status`** yalnız `status:*` okur (`infra/redis/users.acl`). Başka anahtar okumaya kalkan kod sessizce `null` görür — bu tasarımdır.
 9. **Evidence UPDATE/DELETE trigger'ı** uygulama hatasında bile `RAISE EXCEPTION` atar; "düzeltme" gerekiyorsa yeni olay yazılır, eskisi silinmez.
 10. **Migration sırası kesintisiz olmalı** — runner `0001, 0002, …` kontrol eder; atlayan dosya süreci durdurur.

@@ -43,7 +43,7 @@ export async function createOrder(tenantId: string, userId: string, input: Creat
   if (!parsed.success) throw new ApiError(422, 'Ürün girdileri geçersiz', 'VALIDATION_ERROR', parsed.error.flatten().fieldErrors);
 
   // Deneme kuralı: kiracı başına bir kez, yalnız en küçük boyut (ücretsiz katman sızmasına karşı — stratejik §9 risk 4).
-  let isTrial = input.trial;
+  const isTrial = input.trial;
   if (isTrial) {
     const [prior] = await db.select({ n: count() }).from(orders).where(and(eq(orders.tenantId, tenantId), eq(orders.isTrial, true)));
     if ((prior?.n ?? 0) > 0) throw new ApiError(422, 'Deneme hakkınızı daha önce kullandınız', 'TRIAL_ALREADY_USED');

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Button, ResidencyBadge } from '@veritut/ui';
+  import { Button, Card, PageHead, ResidencyBadge } from '@veritut/ui';
   let { data, form } = $props();
   const bp = $derived(data.selected);
   let provider = $state(data.accounts[0]?.providerCode ?? '');
@@ -10,7 +10,7 @@
   const fieldErr = (k: string) => (details && !Array.isArray(details) ? details[k]?.[0] : undefined);
 </script>
 
-<h1 class="vt-h1" style="margin-bottom:6px">Provizyon</h1>
+<PageHead title="Provizyon" variant="ops" />
 <p class="vt-lead" style="margin:0 0 20px">Blueprint seç → girdiler → plan → (yüksek riskte dört-göz) → apply → Ansible → doğrulama → teslim. Her adım kanıtlı.</p>
 <div style="display:grid; grid-template-columns:280px 1fr; gap:14px; align-items:start">
   <Card title="Blueprint" padded={false}>

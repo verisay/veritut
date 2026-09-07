@@ -1,6 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Button, StatusDot } from '@veritut/ui';
+  import { Button, Card, PageHead, StatusDot } from '@veritut/ui';
   import { INCIDENT_SEVERITY_LABEL, INCIDENT_STATUS_LABEL, INCIDENT_STATUSES, POSTMORTEM_REQUIRED, type IncidentSeverity, type IncidentStatus } from '@veritut/types';
   import { formatDateTime, formatDuration } from '@veritut/shared';
   let { data, form } = $props();
@@ -9,7 +9,7 @@
 </script>
 
 <p class="vt-kicker"><a href="/olaylar">Olaylar</a> / #{i.number}</p>
-<h1 class="vt-h1" style="margin:4px 0 6px">{i.title}</h1>
+<PageHead title={i.title} eyebrow="olaylar" variant="ops" />
 <p class="vt-help" style="margin:0 0 6px">
   {INCIDENT_SEVERITY_LABEL[i.severity as IncidentSeverity]} · {INCIDENT_STATUS_LABEL[i.status as IncidentStatus]} · SLA <span class="mono">{i.slaCode ?? '—'}</span> · açılış {formatDateTime(i.createdAt)}
   {#if i.customerVisible} · müşteriye açık{/if}{#if i.escalatedAt} · eskalasyon {formatDateTime(i.escalatedAt)}{/if}

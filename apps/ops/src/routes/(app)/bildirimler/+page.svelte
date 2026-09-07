@@ -1,12 +1,12 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Button } from '@veritut/ui';
+  import { Button, Card, PageHead } from '@veritut/ui';
   import { NOTIFICATION_KIND_LABEL, type NotificationKind } from '@veritut/types';
   import { formatRelative } from '@veritut/shared';
   let { data } = $props();
 </script>
 
-<h1 class="vt-h1" style="margin-bottom:20px">Bildirimler</h1>
+<PageHead title="Bildirimler" variant="ops" />
 <div style="display:grid; gap:10px; max-width:820px">
   {#each data.items as n (n.id)}
     <Card>

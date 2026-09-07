@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card, ResidencyBadge } from '@veritut/ui';
+  import { Card, PageHead, ResidencyBadge } from '@veritut/ui';
   import { FEATURE_LABEL, type FeatureKey } from '@veritut/types';
   let { data } = $props();
   const featureRows = ['workloads.max', 'users.max', 'sla.tiers', 'backup.offsite', 'backup.drill.monthly', 'evidence.bundle', 'status.tenant_page', 'api.enabled', 'api.keys.max', 'support.priority', 'finops'] as FeatureKey[];
@@ -16,7 +16,7 @@
   <link rel="canonical" href="https://veritut.com/fiyatlandirma" />
 </svelte:head>
 
-<h1 class="vt-h1">Fiyatlandırma</h1>
+<PageHead title="Fiyatlandırma" eyebrow="katalog" variant="marketing" />
 <p class="vt-lead" style="margin:6px 0 8px; max-width:720px">Fiyat sunucu başına değil, <strong>yönetilen iş yükü ve SLA seviyesi</strong> başınadır. Kapsam sözleşmede madde madde yazılıdır.</p>
 <p class="vt-help" style="margin:0 0 28px">Tutarlar aylık ve KDV hariçtir. İkametgâh ve SLA katmanı fiyatı etkiler.</p>
 

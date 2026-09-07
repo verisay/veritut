@@ -1,6 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, EmptyState } from '@veritut/ui';
+  import { Button, Card, EmptyState, PageHead, Table } from '@veritut/ui';
   import { INVOICE_STATUS_LABEL, USAGE_METRIC_LABEL, FEATURE_LABEL, type FeatureKey, type InvoiceStatus, type UsageMetric } from '@veritut/types';
   import { formatDate, formatMoney } from '@veritut/shared';
   let { data, form } = $props();
@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head><title>Faturalar — VERITUT</title></svelte:head>
-<h1 class="vt-h1" style="margin-bottom:6px">Faturalar ve abonelikler</h1>
+<PageHead title="Faturalar ve abonelikler" />
 <p class="vt-lead" style="margin:0 0 24px">Fatura kesme ve tahsilat faturalama omurgamızda yapılır; burada aynasını görürsünüz.</p>
 {#if form?.paid}<div class="vt-status" data-state="ok" style="margin-bottom:14px">Ödeme alındı, faturanız güncellendi.</div>{/if}
 {#if form?.message}<div class="vt-status" data-state="down" style="margin-bottom:14px">{form.message}</div>{/if}

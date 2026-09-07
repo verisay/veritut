@@ -285,8 +285,14 @@ opsRouter.post('/drills/schedule', requireStaffRole('senior'), async (_req, res,
 opsRouter.get('/drift', async (req, res, next) => {
   try { res.json(await listDrift({ unacknowledgedOnly: req.query['yeni'] === '1' })); } catch (e) { next(e); }
 });
-opsRouter.post('/drift/scan', requireStaffRole('senior'), async (_req, res, next) => {
-  try { res.json({ scheduled: await scheduleDriftPlans() }); } catch (e) { next(e); }
+const driftScanBody = z.object({ workloadId: z.string().uuid().optional() });
+opsRouter.post('/drift/scan', requireStaffRole('senior'), async (req, res, next) => {
+  try {
+    const b = driftScanBody.parse(req.body ?? {});
+    res.json({ scheduled: await scheduleDriftPlans(b.workloadId ? 1 : 20, { workloadId: b.workloadId }) });
+  } catch (e) {
+    next(e);
+  }
 });
 opsRouter.post('/drift/:id/acknowledge', async (req, res, next) => {
   try { res.json(await acknowledgeDrift(uuid.parse(req.params['id']), req.staff!.id)); } catch (e) { next(e); }
@@ -336,9 +342,15 @@ opsRouter.post('/notifications/:id/read', async (req, res, next) => {
   try { await markRead(uuid.parse(req.params['id']), { staffId: req.staff!.id }); res.status(204).end(); } catch (e) { next(e); }
 });
 
-opsRouter.get('/runs', async (_req, res, next) => {
+const runsQuery = z.object({
+  kind: z.string().min(1).optional(),
+  workloadId: z.string().uuid().optional(),
+  limit: z.coerce.number().int().min(1).max(500).default(100),
+});
+opsRouter.get('/runs', async (req, res, next) => {
   try {
-    res.json(await listRuns(100));
+    const q = runsQuery.parse(req.query);
+    res.json(await listRuns(q.limit, { kind: q.kind, workloadId: q.workloadId }));
   } catch (e) {
     next(e);
   }

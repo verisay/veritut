@@ -1,14 +1,13 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button, ResidencyBadge } from '@veritut/ui';
+  import { Button, Card, PageHead, ResidencyBadge, Table } from '@veritut/ui';
   import { PROVIDERS, RESIDENCIES, WORKLOAD_STATUS_LABEL, type WorkloadStatus } from '@veritut/types';
   let { data, form } = $props();
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; gap:16px">
-  <div><h1 class="vt-h1">İş yükleri</h1><p class="vt-lead" style="margin:4px 0 0">Kayıt defteri. K1: elle/CSV `legacy` kayıtlar; K2'de provizyon motoru aynı tabloya yazar.</p></div>
-  <a href="/ice-aktarim" class="vt-btn vt-btn-secondary vt-btn-sm">CSV içe aktar</a>
-</div>
+<PageHead title="İş yükleri" variant="ops">
+  {#snippet actions()}<a href="/ice-aktarim" class="vt-btn vt-btn-secondary vt-btn-sm">CSV içe aktar</a>{/snippet}
+</PageHead>
 <div style="display:grid; grid-template-columns:1fr 360px; gap:14px; align-items:start">
   <Card padded={false}>
     <Table minWidth={800}>

@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { runMachine, transition, type RunKind, type RunStatus } from '@veritut/types';
 import type { RunFinish, RunStepReport } from '@veritut/validators';
 import { db } from '../db/db.js';
@@ -56,8 +56,18 @@ export async function createRun(input: {
   return run!;
 }
 
-export async function listRuns(limit = 50) {
-  return db.select().from(runs).orderBy(desc(runs.createdAt)).limit(limit);
+/**
+ * Çalıştırma listesi. Süzgeçsiz çağrı yalnız en yeni `limit` satırı döndürür;
+ * belirli bir iş yükünün run'ını ARAYAN kod süzgeç kullanmalı — tek sapma taraması
+ * onlarca run açtığı için liste penceresi aranan satırı kolayca dışarıda bırakır.
+ */
+export async function listRuns(limit = 50, filter: { kind?: string; workloadId?: string } = {}) {
+  const conds = [
+    ...(filter.kind ? [eq(runs.kind, filter.kind)] : []),
+    ...(filter.workloadId ? [eq(runs.workloadId, filter.workloadId)] : []),
+  ];
+  const q = db.select().from(runs);
+  return (conds.length > 0 ? q.where(and(...conds)) : q).orderBy(desc(runs.createdAt)).limit(limit);
 }
 
 export async function getRun(id: string) {

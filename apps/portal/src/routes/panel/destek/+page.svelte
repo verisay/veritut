@@ -1,13 +1,13 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button } from '@veritut/ui';
+  import { Button, Card, PageHead, Table } from '@veritut/ui';
   import { TICKET_STATE_LABEL, type TicketState } from '@veritut/types';
   import { formatRelative } from '@veritut/shared';
   let { data, form } = $props();
 </script>
 
 <svelte:head><title>Destek — VERITUT</title></svelte:head>
-<h1 class="vt-h1" style="margin-bottom:6px">Destek</h1>
+<PageHead title="Destek" />
 <p class="vt-lead" style="margin:0 0 24px">Tek muhatap. Talebiniz destek masamıza düşer; yanıtlar burada ve e-postanızda görünür.</p>
 
 <div style="display:grid; grid-template-columns:1fr 360px; gap:14px; align-items:start">

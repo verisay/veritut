@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
-  import { Card, ResidencyBadge, StatusDot, Button } from '@veritut/ui';
+  import { Button, Card, PageHead, ResidencyBadge, StatusDot } from '@veritut/ui';
   import { ORDER_STATUS_LABEL_TR, type Residency } from '@veritut/types';
   import { formatDateTime, formatMoney } from '@veritut/shared';
   let { data } = $props();
@@ -19,7 +19,7 @@
 
 <svelte:head><title>{o.workloadName} siparişi — VERITUT</title></svelte:head>
 <p class="vt-kicker"><a href="/panel/siparisler">Siparişler</a> / {o.workloadSlug}</p>
-<h1 class="vt-h1" style="margin:4px 0 6px">{o.workloadName}</h1>
+<PageHead title={o.workloadName} eyebrow="siparişler" />
 <p class="vt-help" style="margin:0 0 24px">{o.productSlug} · {o.planCode}/{o.slaCode} · <ResidencyBadge residency={o.residency as Residency} small /> {o.region} · {o.size} · {formatDateTime(o.createdAt)}</p>
 
 <div style="display:grid; grid-template-columns:1fr 320px; gap:14px; align-items:start">

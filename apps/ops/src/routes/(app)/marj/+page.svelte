@@ -1,15 +1,14 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { Card, Table, Button } from '@veritut/ui';
+  import { Button, Card, PageHead, Table } from '@veritut/ui';
   let { data } = $props();
   const r = $derived(data.report);
   const flagLabel: Record<string, string> = { ok: '', low: 'marj < %35', no_revenue: 'gelir yok', no_cost: 'maliyet yok', fx_missing: 'kur yok' };
 </script>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; gap:16px">
-  <div><h1 class="vt-h1">Maliyet & marj — {r.period}</h1><p class="vt-lead" style="margin:4px 0 0">"Sunucu + %20" iş modeli değildir. Marj yönetilen katmanda; %35 altı bayraklanır.</p></div>
-  <form method="GET" style="display:flex; gap:8px; align-items:end"><div><label class="vt-label" for="period">Dönem</label><input class="vt-input mono" id="period" name="period" value={r.period} /></div><Button type="submit" variant="secondary" size="sm">Göster</Button></form>
-</div>
+<PageHead title="Maliyet & marj — {r.period}" variant="ops">
+  {#snippet actions()}<form method="GET" style="display:flex; gap:8px; align-items:end"><div><label class="vt-label" for="period">Dönem</label><input class="vt-input mono" id="period" name="period" value={r.period} /></div><Button type="submit" variant="secondary" size="sm">Göster</Button></form>{/snippet}
+</PageHead>
 <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:14px">
   <Card><p class="vt-kicker">Gelir (TRY)</p><p class="vt-h2 tnum">{r.totals.revenueTry.toLocaleString('tr-TR')}</p></Card>
   <Card><p class="vt-kicker">Maliyet (TRY)</p><p class="vt-h2 tnum">{r.totals.costTry.toLocaleString('tr-TR')}</p></Card>

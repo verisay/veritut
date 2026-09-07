@@ -4,12 +4,14 @@
  */
 @layer components {
   /* ── Tipografi ─────────────────────────────────────────────────────── */
-  .vt-h1 {
-    font-size: 30px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-    margin: 0;
+  /* Yalnız ekran okuyucu için — görsel başlık PageHead'de. */
+  .vt-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
   }
   .vt-h2 {
     font-size: 22px;
@@ -1037,5 +1039,62 @@
     .vt-bars[data-animate='true'] span {
       animation: none;
     }
+  }
+
+  /* ── Sayfa başlığı — yoğunluk yüzeye göre ─────────────────────────── */
+  .vt-pagehead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .vt-pagehead .vt-eyebrow {
+    margin-bottom: 10px;
+  }
+  .vt-pagehead .vt-lead {
+    margin: 6px 0 0;
+    max-width: 70ch;
+  }
+  .vt-pagehead-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .vt-pagetitle {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  .vt-pagetitle.mono {
+    font-size: 19px;
+    letter-spacing: -0.01em;
+  }
+  .vt-pagehead[data-variant='ops'] {
+    margin-bottom: 20px;
+  }
+  .vt-pagehead[data-variant='ops'] .vt-pagetitle {
+    font-size: 22px;
+  }
+  .vt-pagehead[data-variant='ops'] .vt-lead {
+    font-size: 13.5px;
+  }
+  .vt-pagehead[data-variant='marketing'] {
+    margin-bottom: 36px;
+  }
+  .vt-pagehead[data-variant='marketing'] .vt-pagetitle {
+    font-size: clamp(34px, 4.4vw, 56px);
+    letter-spacing: -0.035em;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+  .vt-pagehead[data-variant='marketing'] .vt-lead {
+    font-size: 17px;
+    margin-top: 14px;
   }
 }

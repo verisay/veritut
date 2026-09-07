@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card } from '@veritut/ui';
+  import { Card, PageHead } from '@veritut/ui';
   let { data } = $props();
 </script>
 
@@ -11,7 +11,7 @@
 
 <article style="max-width:720px">
   <p class="vt-kicker"><a href="/urunler/{data.product.slug}">{data.product.title}</a> · karşılaştırma</p>
-  <h1 class="vt-h1" style="margin:6px 0 10px">{data.cmp.title}</h1>
+  <PageHead title={data.cmp.title} eyebrow="karşılaştırma" variant="marketing" />
   <p class="vt-lead" style="margin:0 0 24px">{data.cmp.summary}</p>
   <Card title="VERITUT ne ekliyor?">
     <ul style="margin:0; padding-left:20px; display:grid; gap:8px; font-size:14px">
